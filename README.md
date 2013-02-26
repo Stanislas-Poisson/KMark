@@ -24,7 +24,7 @@ Les éléments de type H1 à H6 sont généré via un ou plusieurs dièses (le n
 
 #### Liste non-ordonné/ordonné
 ##### Liste non-ordonné
-Utiliser un plus accompagné d'une tabulation pour mettre en place une liste non-ordonné, pour mettre des sous liste, décaler simplement d'une tabulation pour chaque niveau.
+Utiliser un plus accompagné d'une tabulation pour mettre en place une liste non-ordonné, pour mettre des sous-liste, décaler simplement d'une tabulation pour chaque niveau.
 
 	+	Elem 1
 	+	Elem 2
@@ -39,6 +39,115 @@ Utiliser un plus accompagné d'une tabulation pour mettre en place une liste non
 		</ul></li>
 		<li>Elem 3</li>
 	</ul>
+
+##### Liste ordonné
+Utiliser un chiffre suivie d'un point accompagné d'une tabulation pour mettre en place une liste ordonné, pour mettre des sous-liste, décaler simplement d'une tabulation pour chaque niveau.
+
+	1.	Elem 1
+	2.	Elem 2
+		1.	Elem 2.1
+		2.	Elem 2.2
+	3.	Elem 3
+	<ol>
+		<li>Elem 1</li>
+		<li>Elem 2<ol>
+			<li>Elem 2.1</li>
+			<li>Elem 2.1</li>
+		</ol></li>
+		<li>Elem 3</li>
+	</ol>
+
+Il est bien entendu possible de mélanger les deux types de listes.
+
+	1.	Elem 1
+	2.	Elem 2
+		+	Elem 2.1
+		+	Elem 2.2
+	3.	Elem 3
+	<ol>
+		<li>Elem 1</li>
+		<li>Elem 2<ul>
+			<li>Elem 2.1</li>
+			<li>Elem 2.1</li>
+		</ul></li>
+		<li>Elem 3</li>
+	</ol>
+
+#### Citation:
+Il est toujours intéréssant de pouvoir citer un texte. La mise en place est simple, il suffit d'utiliser le "plus grand que" au début de chaque ligne accompagné d'une tabulation
+
+	>	Premier ligne de citation
+	>	Deuxieme ligne de citation
+	<blockquote>
+		Premier ligne de citation
+		Deuxieme ligne de citation
+	</blockquote>
+
+#### Code:
+L'affichage d'un code html, css, js ou autre se fais via l'implentation autour du code à afficher de plusieurs tilde
+
+	~~
+	<div>
+		Mon Code <a href="" title=""><span class="b">Que</span> voila</a>.
+	</div>
+	~~
+	<code>
+		<div>
+			Mon Code <a href="" title=""><span class="b">Que</span> voila</a>.
+		</div>
+	</code>
+
+#### Tableau:
+Le symbole pipe accompagné d'un espace est l'élément detecteur d'un tableau
+
+	| Colonne 1 | Colonne 2
+	| --------- | ---------
+	| Cell 1.1  | Cell 1.2
+	| Cell 2.1  | Cell 2.2
+	<table>
+		<tr>
+			<td>Colonne 1</td>
+			<td>Colonne 2</td>
+		</td>
+		<tr>
+			<td>Cell 1.1</td>
+			<td>Cell 1.2</td>
+		</td>
+		<tr>
+			<td>Cell 2.1</td>
+			<td>Cell 2.2</td>
+		</td>
+	</table>
+En cas de cellule vide, penser a mettre au moins deux espaces consécutifs entre les pipes et un espace apres la pipe, si la derniere collone est la vide.
+
+#### Trait horizontal
+L'affichage d'un trait horizontal se fait via un ensemble minimale de six tirets d'affilés sur une seul ligne
+
+	------
+	<hr>
+
+#### Paragraphe
+Les paragraphes sont générer via une ligne vide entre chaques bloc de texte.
+
+	Paragraphe 1
+	
+	Paragraphe 2
+	<p>Paragraphe 1</p>
+	<p>paragraphe 2</p>
+
+#### Retour à la ligne
+Les retours à la ligne sont mise en place via un double espaces en fin de ligne de texte
+
+	Ma premiere ligne  
+	Ma deuxieme ligne
+	Ma premiere ligne<br>
+	Ma deuxieme ligne
+
+#### Liens
+Les liens fonctionne sur le principe d'un text suivi du lien.
+
+	[Stanislas-Poisson.fr]:(http://www.stanislas-poisson.fr/ "Aller sur le site")
+	<a href="http://www.stanislas-poisson.fr/" title="Aller sur le site">Stanislas-Poisson.fr</a>
 
 #### Stylisation:
 ##### Gras :
