@@ -3,7 +3,7 @@
 *
 */
 function KMark($text){
-	static $mark;
+	static $kmark;
 	if(!$kmark){
 		$kmark=new KMark();
 	}
