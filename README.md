@@ -22,8 +22,23 @@ Les éléments de type H1 à H6 sont généré via un ou plusieurs dièses (le n
 	## Mon sous-titre
 	<h2>Mon sous-titre</h2>
 
-#### Liste ordonné/non ordonné
+#### Liste non-ordonné/ordonné
+##### Liste non-ordonné
+Utiliser un plus accompagné d'une tabulation pour mettre en place une liste non-ordonné, pour mettre des sous liste, décaler simplement d'une tabulation pour chaque niveau.
 
+	+	Elem 1
+	+	Elem 2
+		+	Elem 2.1
+		+	Elem 2.2
+	+	Elem 3
+	<ul>
+		<li>Elem 1</li>
+		<li>Elem 2<ul>
+			<li>Elem 2.1</li>
+			<li>Elem 2.1</li>
+		</ul></li>
+		<li>Elem 3</li>
+	</ul>
 
 #### Stylisation:
 ##### Gras :
