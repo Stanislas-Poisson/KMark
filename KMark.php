@@ -3,7 +3,7 @@
 *
 */
 function KMark($text){
-	static $kmark;
+	static $mark;
 	if(!$kmark){
 		$kmark=new KMark();
 	}
@@ -68,6 +68,7 @@ class KMark{
 			if(preg_match('/^([#]{1,6}) (.*)/',$v,$result)){$text=str_replace($v,$this->_helem($result),$text);}
 			elseif(preg_match('/^[\+|\d\.]+\t(.*)/',$v)){$text=str_replace($v,$this->_liste($v),$text);}
 			elseif(preg_match_all('/^>\t(.*)/m',$v,$result)){$text=str_replace($v,$this->_citation($result),$text);}
+			elseif(preg_match_all('/[~~]{2,}([^~]*)[~~]{2,}/',$v,$result)){$text=str_replace($v,$this->_code($result),$text);}
 			elseif(preg_match_all('/^(\|[^\n]*)/m',$v,$result)){$text=str_replace($v,$this->_tableau($result),$text);}
 			elseif(preg_match('/([\-]{6,})/',$v)){$text=str_replace($v,'<hr>',$text);}
 			else{$text=str_replace($v,$this->_paragraphe($v),$text);}
@@ -91,6 +92,9 @@ class KMark{
 			$return.='</tr>';
 		}
 		return $return.'</table>';
+	}
+	function _code($text){
+		return '<code>'.nl2br(str_replace('	','&nbsp;&nbsp;&nbsp;&nbsp;',htmlspecialchars($text[1][0]))).'</code>';
 	}
 	function _citation($text){
 		$id=$class=$t='';
