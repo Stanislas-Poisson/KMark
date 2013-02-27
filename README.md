@@ -144,12 +144,41 @@ Les retours à la ligne sont mise en place via un double espaces en fin de ligne
 	Ma deuxieme ligne
 
 #### Liens
-Les liens fonctionne sur le principe d'un text suivi du lien.
+Les liens se gère via le text à afficher entre crochets accompagné d'un deux-points et entre parenthèses les différentes paramètres.
 
 	[Stanislas-Poisson.fr]:(http://www.stanislas-poisson.fr/ "Aller sur le site")
 	<a href="http://www.stanislas-poisson.fr/" title="Aller sur le site">Stanislas-Poisson.fr</a>
 
+#### Images
+Les imagesse gère via un point d'exclamation suit du text alternatif entre crochets et entre parenthèses les différentes paramètres.
+
+	![logo de stanislas-poisson.fr](http://www.stanislas-poisson.fr/theme/logo.png)
+	<img src="http://www.stanislas-poisson.fr/theme/logo.png" alt="logo de stanislas-poisson.fr">
+
 #### Stylisation:
+##### Id et Class CSS :
+Il est possible de donner un id et des class css aux-éléments ci-dessous en placant à la toute fin de l'élément un espace puis entre accolades les différents éléments.
+
+	# Mon titre {#monId .maClass01 .maClass02}
+	<h1 id="monId" class="maClass01 maClass02">Mon titre</h1>
+
++ Titre Hn
++ Liste non-ordonné/ordonné
++ Citation
++ Code
++ Tableau
++ Paragraphe
+
+Il est possible de donner un id et des class css aux-éléments ci-dessous en placant à la fin de la parenthese un espace puis entre accolades les différents éléments.
+
+	[Stanislas-Poisson.fr]:(http://www.stanislas-poisson.fr/ "Aller sur le site" {#monId .maClass})
+	<a href="http://www.stanislas-poisson.fr/" title="Aller sur le site" id="monId" class="maClass">Stanislas-Poisson.fr</a>
+	![logo de stanislas-poisson.fr](http://www.stanislas-poisson.fr/theme/logo.png {#monId .maClass})
+	<img src="http://www.stanislas-poisson.fr/theme/logo.png" alt="logo de stanislas-poisson.fr" id="monId" class="maClass">
+
++ Liens
++ Images
+
 ##### Gras :
 Utiliser un astérisque accompagné d'un espace autour du mot ou de l'ensemble de mots à mettre en gras. L'ensemble sera mis dans un span ayant pour class **_b_**.
 
