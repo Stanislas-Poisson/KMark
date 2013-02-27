@@ -1,7 +1,9 @@
 <?php
-/*
-*
-*/
+#
+# KMark est une adaptation de la syntaxe MarkDown, dédié au web, permettant de donner des paramètres a tous les éléments directement. 
+# Copyright © 2013 Stanislas Poisson  
+# http://www.stanislas-poisson.fr/
+#
 function KMark($text){
 	static $kmark;
 	if(!$kmark){
