@@ -4,14 +4,7 @@
 # Copyright © 2013 Stanislas Poisson  
 # http://www.stanislas-poisson.fr/
 #
-function KMark($text){
-	static $kmark;
-	if(!$kmark){
-		$kmark=new KMark();
-	}
-	return $kmark->transition($text);
-}
-class KMark{
+class KMark extends Config{
 	function transition($text){
 		$text=$this->cleanWhiteSpace($text);
 		$text=$this->links($text);
@@ -46,9 +39,11 @@ class KMark{
 			foreach($p as $po){if(substr($po,0,1)=='#'){($id=='')?$id=' id="'.substr($po,1).'"':'';}else{$class.=' '.substr($po,1);}}
 			($class!='')?$class=' class="'.trim($class).'"':'';
 		}
+		preg_match('/(.*)[ ]*"(.*)"$/',$txt,$result);
+		if(isset($result[1])){$title=' title="'.trim($result[2]).'"';$txt=$result[1];}
 		preg_match('/\[([^\]]*)/s',$link[1],$result);
 		if(isset($result[1])){$alt=$result[1];}
-		$return='<a href="'.$txt.'" alt="'.$alt.'"'.$id.$class.'>'.$link[1].'</a>';
+		$return='<a href="'.trim($txt).'" alt="'.trim($alt).'"'.$title.$id.$class.'>'.$link[1].'</a>';
 		return $return;
 	}
 	function images($text){
