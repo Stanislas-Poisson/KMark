@@ -4,7 +4,7 @@
 # Copyright © 2013 Stanislas Poisson  
 # http://www.stanislas-poisson.fr/
 #
-class KMark extends Config{
+class KMark{
 	function transition($text){
 		$text=$this->cleanWhiteSpace($text);
 		$text=$this->links($text);
@@ -15,7 +15,7 @@ class KMark extends Config{
 		return $text;
 	}
 	function stylish($text){
-		return preg_replace_callback('/([\*_\-\/]+) ([\w\d\s]+) (?:[\*_\-\/]+)/',array(&$this,'_stylishCompile'),$text);
+		return preg_replace_callback('/([\*_\-\/]+) ([\w\d\s"<=:\/\.>]+) (?:[\*_\-\/]+)/',array(&$this,'_stylishCompile'),$text);
 	}
 	function _stylishCompile($text){
 		$class=array('*'=>' b','_'=>' u','-'=>' i','/'=>' d',);
@@ -43,7 +43,7 @@ class KMark extends Config{
 		if(isset($result[1])){$title=' title="'.trim($result[2]).'"';$txt=$result[1];}
 		preg_match('/\[([^\]]*)/s',$link[1],$result);
 		if(isset($result[1])){$alt=$result[1];}
-		$return='<a href="'.trim($txt).'" alt="'.trim($alt).'"'.$title.$id.$class.'>'.$link[1].'</a>';
+		$return='<a href="'.trim($txt).'" '.$title.$id.$class.'>'.$link[1].'</a>';
 		return $return;
 	}
 	function images($text){
