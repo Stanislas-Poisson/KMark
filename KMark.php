@@ -30,7 +30,7 @@ class KMark{
 		return $text;
 	}
 	function links($text){
-		return preg_replace_callback('/\[(.*)\]:\(([^\)]*)\)/',array(&$this,'_link'),$text);
+		return preg_replace_callback('/\[([^:]*)\]:\(([^\)]*)\)/',array(&$this,'_link'),$text);
 	}
 	function _link($link){
 		$title=$id=$class='';$alt=$link[1];$txt=$link[2];
