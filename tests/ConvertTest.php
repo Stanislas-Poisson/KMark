@@ -105,6 +105,7 @@ final class ConvertTest extends TestCase
         yield 'italic' => ['-foo-', '<p><span class="i">foo</span></p>'];
         yield 'underline' => ['_foo_', '<p><span class="u">foo</span></p>'];
         yield 'strikethrough' => ['~foo~', '<p><span class="d">foo</span></p>'];
+        yield 'two styles side by side' => ['*a* -b- _c_ ~d~', '<p><span class="b">a</span> <span class="i">b</span> <span class="u">c</span> <span class="d">d</span></p>'];
         yield 'several words' => ['*foo bar*', '<p><span class="b">foo bar</span></p>'];
         yield 'combined styles' => ['_-*foo*-_', '<p><span class="u i b">foo</span></p>'];
         yield 'repeated marker' => ['**foo**', '<p><span class="b">foo</span></p>'];

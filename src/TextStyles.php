@@ -21,7 +21,7 @@ final class TextStyles
 
     public function render(string $text): string
     {
-        $text = preg_replace_callback('/(?<!\w)([*_\-~]+)(\S(?:[^\n]*?\S)?)([*_\-~]+)(?!\w)/', $this->style(...), $text) ?? $text;
+        $text = preg_replace_callback('/(?<!\w)([*_\-~]+)(\S(?:[^\n]*?\S)??)([*_\-~]+)(?!\w)/', $this->style(...), $text) ?? $text;
 
         return preg_replace('/ {2,}\n/', "<br>\n", $text) ?? $text;
     }
