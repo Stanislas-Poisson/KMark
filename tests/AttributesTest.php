@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class AttributesTest extends TestCase
 {
-    public function testExtractsTheBlockAtTheEnd(): void
+    public function test_extracts_the_block_at_the_end(): void
     {
         [$text, $attributes] = Attributes::extract('Title {#main .a .b}');
 
@@ -19,7 +19,7 @@ final class AttributesTest extends TestCase
         self::assertSame(' id="main" class="a b"', $attributes->render());
     }
 
-    public function testLeavesTheTextThatHasNoValidBlock(): void
+    public function test_leaves_the_text_that_has_no_valid_block(): void
     {
         foreach (['Title', 'Title {}', 'Title {x}', 'Title {#a b}', 'Title {#}', '{.a} Title'] as $text) {
             [$remaining, $attributes] = Attributes::extract($text);
@@ -29,7 +29,7 @@ final class AttributesTest extends TestCase
         }
     }
 
-    public function testMergeKeepsTheFirstIdAndGathersTheClasses(): void
+    public function test_merge_keeps_the_first_id_and_gathers_the_classes(): void
     {
         $merged = (new Attributes('a', ['x']))->merge(new Attributes('b', ['y']));
 

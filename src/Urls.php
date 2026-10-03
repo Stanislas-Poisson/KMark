@@ -12,9 +12,9 @@ namespace KMark;
  */
 final class Urls
 {
-    private const START = "\x01";
-
     private const END = "\x02";
+
+    private const START = "\x01";
 
     /**
      * Replaces each URL with a token, without the punctuation and the style markers
@@ -28,7 +28,7 @@ final class Urls
         $text = str_replace([self::START, self::END], '', $text);
         $text = preg_replace_callback('~\bhttps?://(?:(?!&lt;|&gt;)[^\s<>"])+~i', function (array $match) use (&$urls): string {
             [$url, $trailing] = $this->split($match[0]);
-            $urls[] = $url;
+            $urls[]           = $url;
 
             return self::START . (count($urls) - 1) . self::END . $trailing;
         }, $text) ?? $text;
@@ -49,21 +49,6 @@ final class Urls
     }
 
     /**
-     * @return array{string, string} the URL and what follows it
-     */
-    private function split(string $url): array
-    {
-        $trailing = '';
-
-        while (1 === preg_match('/[.,;:!?)*_~-]$/', $url) && !$this->endsTheUrl($url)) {
-            $trailing = substr($url, -1) . $trailing;
-            $url = substr($url, 0, -1);
-        }
-
-        return [$url, $trailing];
-    }
-
-    /**
      * A closing parenthesis ends the URL when it closes one that the URL opened,
      * and a semicolon when it ends an escaped character such as "&amp;".
      */
@@ -74,5 +59,20 @@ final class Urls
         }
 
         return str_ends_with($url, ';') && 1 === preg_match('/&(?:amp|lt|gt);$/', $url);
+    }
+
+    /**
+     * @return array{string, string} the URL and what follows it
+     */
+    private function split(string $url): array
+    {
+        $trailing = '';
+
+        while (1 === preg_match('/[.,;:!?)*_~-]$/', $url) && ! $this->endsTheUrl($url)) {
+            $trailing = substr($url, -1) . $trailing;
+            $url      = substr($url, 0, -1);
+        }
+
+        return [$url, $trailing];
     }
 }

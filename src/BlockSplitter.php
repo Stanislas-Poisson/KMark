@@ -16,32 +16,32 @@ final class BlockSplitter
      */
     public function split(string $text): array
     {
-        $blocks = [];
+        $blocks  = [];
         $current = [];
-        $inCode = false;
+        $inCode  = false;
 
         foreach (explode("\n", $text) as $line) {
             if (1 === preg_match('/^~{2,}\s*$/', $line)) {
-                if (!$inCode && [] !== $current) {
+                if (! $inCode && [] !== $current) {
                     $blocks[] = implode("\n", $current);
-                    $current = [];
+                    $current  = [];
                 }
 
-                $inCode = !$inCode;
+                $inCode    = ! $inCode;
                 $current[] = $line;
 
-                if (!$inCode) {
+                if (! $inCode) {
                     $blocks[] = implode("\n", $current);
-                    $current = [];
+                    $current  = [];
                 }
 
                 continue;
             }
 
-            if (!$inCode && '' === trim($line)) {
+            if (! $inCode && '' === trim($line)) {
                 if ([] !== $current) {
                     $blocks[] = implode("\n", $current);
-                    $current = [];
+                    $current  = [];
                 }
 
                 continue;

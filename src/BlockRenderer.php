@@ -17,8 +17,7 @@ final readonly class BlockRenderer
     public function __construct(
         private InlineRenderer $inline,
         private ListRenderer $lists,
-    ) {
-    }
+    ) {}
 
     public function render(string $block): string
     {
@@ -56,31 +55,6 @@ final readonly class BlockRenderer
         return '<p' . $attributes->render() . '>' . $this->inline->render($text) . '</p>';
     }
 
-    private function heading(int $level, string $text): string
-    {
-        [$text, $attributes] = Attributes::extract($text);
-
-        return '<h' . $level . $attributes->render() . '>' . $this->inline->render(trim($text)) . '</h' . $level . '>';
-    }
-
-    /**
-     * @param list<string> $lines
-     */
-    private function quote(array $lines): string
-    {
-        $attributes = new Attributes();
-        $content = [];
-
-        foreach ($lines as $line) {
-            $line = 1 === preg_match('/^>\t(.*)$/', $line, $quote) ? $quote[1] : $line;
-            [$line, $lineAttributes] = Attributes::extract($line);
-            $attributes = $attributes->merge($lineAttributes);
-            $content[] = $this->inline->render($line);
-        }
-
-        return '<blockquote' . $attributes->render() . '>' . implode("\n", $content) . '</blockquote>';
-    }
-
     /**
      * @param list<string> $lines
      */
@@ -95,6 +69,31 @@ final readonly class BlockRenderer
         return '<code>' . implode("<br />\n", $content) . '</code>';
     }
 
+    private function heading(int $level, string $text): string
+    {
+        [$text, $attributes] = Attributes::extract($text);
+
+        return '<h' . $level . $attributes->render() . '>' . $this->inline->render(trim($text)) . '</h' . $level . '>';
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    private function quote(array $lines): string
+    {
+        $attributes = new Attributes();
+        $content    = [];
+
+        foreach ($lines as $line) {
+            $line                    = 1 === preg_match('/^>\t(.*)$/', $line, $quote) ? $quote[1] : $line;
+            [$line, $lineAttributes] = Attributes::extract($line);
+            $attributes              = $attributes->merge($lineAttributes);
+            $content[]               = $this->inline->render($line);
+        }
+
+        return '<blockquote' . $attributes->render() . '>' . implode("\n", $content) . '</blockquote>';
+    }
+
     /**
      * @param list<string> $lines
      */
@@ -103,7 +102,7 @@ final readonly class BlockRenderer
         $html = '<table>';
 
         foreach ($lines as $line) {
-            if (!str_starts_with($line, '|') || 1 === preg_match('/^[| -]+$/', $line)) {
+            if (! str_starts_with($line, '|') || 1 === preg_match('/^[| -]+$/', $line)) {
                 continue;
             }
 

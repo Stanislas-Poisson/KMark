@@ -17,8 +17,7 @@ final readonly class Attributes
     public function __construct(
         public string $id = '',
         public array $classes = [],
-    ) {
-    }
+    ) {}
 
     /**
      * Takes the "{#id .class}" block off the end of a text. If the braces hold
@@ -38,19 +37,20 @@ final readonly class Attributes
             return [$text, new self()];
         }
 
-        $id = '';
+        $id      = '';
         $classes = [];
 
         foreach ($tokens as $token) {
             $name = substr($token, 1);
 
-            if (1 !== preg_match('/^[\w-]+$/', $name) || !in_array($token[0], ['#', '.'], true)) {
+            if (1 !== preg_match('/^[\w-]+$/', $name) || ! in_array($token[0], ['#', '.'], true)) {
                 return [$text, new self()];
             }
 
             if ('#' === $token[0]) {
                 $id = '' === $id ? $name : $id;
-            } else {
+            }
+            else {
                 $classes[] = $name;
             }
         }

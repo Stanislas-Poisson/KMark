@@ -12,9 +12,7 @@ namespace KMark;
  */
 final readonly class ListRenderer
 {
-    public function __construct(private InlineRenderer $inline)
-    {
-    }
+    public function __construct(private InlineRenderer $inline) {}
 
     /**
      * @param list<string> $lines
@@ -22,6 +20,7 @@ final readonly class ListRenderer
     public function render(array $lines): string
     {
         $html = '';
+
         /** @var list<string> $open the type of each opened list, from the outermost */
         $open = [];
 
@@ -39,7 +38,8 @@ final readonly class ListRenderer
                     $html .= '</' . array_pop($open) . '><' . $type . '>';
                     $open[] = $type;
                 }
-            } else {
+            }
+            else {
                 $html .= '<' . $type . '>';
                 $open[] = $type;
             }
@@ -72,7 +72,7 @@ final readonly class ListRenderer
             }
 
             if ([] !== $items) {
-                $last = count($items) - 1;
+                $last         = count($items) - 1;
                 $items[$last] = [$items[$last][0], $items[$last][1], $items[$last][2] . "\n" . $line];
             }
         }

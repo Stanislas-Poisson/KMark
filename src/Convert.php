@@ -15,9 +15,7 @@ final class Convert
 {
     private string $text = '';
 
-    public function __construct(private readonly Options $options = new Options())
-    {
-    }
+    public function __construct(private readonly Options $options = new Options()) {}
 
     /**
      * Converts a text in one call.
@@ -27,9 +25,16 @@ final class Convert
         return (new self($options ?? new Options()))->setText($text)->convert()->getText();
     }
 
-    public function setText(string $text = ''): self
+    public function convert(): self
     {
-        $this->text = trim($text);
+        $renderer = new BlockRenderer($inline = new InlineRenderer($this->options), new ListRenderer($inline));
+        $blocks   = [];
+
+        foreach ((new BlockSplitter())->split($this->clean($this->text)) as $block) {
+            $blocks[] = $renderer->render($block);
+        }
+
+        $this->text = implode("\n\n", $blocks);
 
         return $this;
     }
@@ -39,16 +44,9 @@ final class Convert
         return $this->text;
     }
 
-    public function convert(): self
+    public function setText(string $text = ''): self
     {
-        $renderer = new BlockRenderer($inline = new InlineRenderer($this->options), new ListRenderer($inline));
-        $blocks = [];
-
-        foreach ((new BlockSplitter())->split($this->clean($this->text)) as $block) {
-            $blocks[] = $renderer->render($block);
-        }
-
-        $this->text = implode("\n\n", $blocks);
+        $this->text = trim($text);
 
         return $this;
     }
