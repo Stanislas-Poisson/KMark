@@ -35,14 +35,14 @@ final readonly class Options
         public array $styleClasses = self::DEFAULT_STYLE_CLASSES,
         public array $allowedSchemes = ['http', 'https', 'mailto', 'tel', 'ftp'],
     ) {
-        self::assertStyleClasses($styleClasses);
-        self::assertSchemes($allowedSchemes);
+        $this->assertStyleClasses($styleClasses);
+        $this->assertSchemes($allowedSchemes);
     }
 
     /**
      * @param list<string> $allowedSchemes
      */
-    private static function assertSchemes(array $allowedSchemes): void
+    private function assertSchemes(array $allowedSchemes): void
     {
         foreach ($allowedSchemes as $allowedScheme) {
             if (1 !== preg_match('/^[a-z][a-z0-9+.\-]*$/', $allowedScheme)) {
@@ -57,7 +57,7 @@ final readonly class Options
     /**
      * @param array<string, string> $styleClasses
      */
-    private static function assertStyleClasses(array $styleClasses): void
+    private function assertStyleClasses(array $styleClasses): void
     {
         foreach ($styleClasses as $marker => $class) {
             if (! array_key_exists($marker, self::DEFAULT_STYLE_CLASSES)) {

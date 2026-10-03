@@ -26,16 +26,16 @@ final readonly class ListBlock implements Block
      */
     public function render(array $lines): string
     {
-        $html  = '';
-        $lists = new OpenLists();
+        $html      = '';
+        $openLists = new OpenLists();
 
         foreach ($this->items($lines) as [$level, $type, $text]) {
             [$text, $attributes] = Attributes::extract($text);
-            $html .= $lists->enter($level, $type) . '<li' . $attributes->render() . '>'
+            $html .= $openLists->enter($level, $type) . '<li' . $attributes->render() . '>'
                 . $this->inlineRenderer->render($text);
         }
 
-        return $html . $lists->closeAll();
+        return $html . $openLists->closeAll();
     }
 
     /**

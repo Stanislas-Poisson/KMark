@@ -16,12 +16,12 @@ final readonly class BlockRenderer
      */
     private array $blocks;
 
-    private ParagraphBlock $paragraph;
+    private ParagraphBlock $paragraphBlock;
 
     public function __construct(InlineRenderer $inlineRenderer)
     {
-        $this->paragraph = new ParagraphBlock($inlineRenderer);
-        $this->blocks    = [
+        $this->paragraphBlock = new ParagraphBlock($inlineRenderer);
+        $this->blocks         = [
             new HeadingBlock($inlineRenderer),
             new ListBlock($inlineRenderer),
             new QuoteBlock($inlineRenderer),
@@ -41,6 +41,6 @@ final readonly class BlockRenderer
             }
         }
 
-        return $this->paragraph->render($lines);
+        return $this->paragraphBlock->render($lines);
     }
 }

@@ -11,20 +11,24 @@ namespace KMark;
  * Copyright (c) 2013 Stanislas Poisson - MIT license
  * https://stanislas-poisson.fr
  */
-final class Convert
+final readonly class Convert
 {
-    private string $text = '';
-
-    public function __construct(private readonly Options $options = new Options()) {}
+    public function __construct(
+        private Options $options = new Options(),
+        private string $text = '',
+    ) {}
 
     /**
      * Converts a text in one call.
      */
     public static function toHtml(string $text, ?Options $options = null): string
     {
-        return (new self($options ?? new Options()))->setText($text)->convert()->getText();
+        return (new self($options ?? new Options()))->withText($text)->convert()->getText();
     }
 
+    /**
+     * A converter that holds the text of this one, converted to HTML.
+     */
     public function convert(): self
     {
         $blockRenderer = new BlockRenderer(new InlineRenderer($this->options));
@@ -34,9 +38,7 @@ final class Convert
             $blocks[] = $blockRenderer->render($block);
         }
 
-        $this->text = implode("\n\n", $blocks);
-
-        return $this;
+        return new self($this->options, implode("\n\n", $blocks));
     }
 
     public function getText(): string
@@ -44,11 +46,12 @@ final class Convert
         return $this->text;
     }
 
-    public function setText(string $text = ''): self
+    /**
+     * A converter that has the same options and holds the given text.
+     */
+    public function withText(string $text): self
     {
-        $this->text = trim($text);
-
-        return $this;
+        return new self($this->options, trim($text));
     }
 
     /**

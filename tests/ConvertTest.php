@@ -267,6 +267,17 @@ final class ConvertTest extends TestCase
         self::assertSame('<code>&lt;b&gt;</code>', Convert::toHtml("~~\n<b>\n~~", new Options(unsafeAllowRawHtml: true)));
     }
 
+    public function test_a_converter_is_never_changed(): void
+    {
+        $convert   = new Convert();
+        $withText  = $convert->withText('*a*');
+        $converted = $withText->convert();
+
+        self::assertSame('', $convert->getText());
+        self::assertSame('*a*', $withText->getText());
+        self::assertSame('<p><span class="b">a</span></p>', $converted->getText());
+    }
+
     public function test_allowed_schemes_can_be_changed(): void
     {
         $options = new Options(allowedSchemes: ['https', 'gopher']);
@@ -298,19 +309,19 @@ final class ConvertTest extends TestCase
         $options = new Options(styleClasses: ['*' => 'strong']);
 
         self::assertSame('<p><span class="strong">a</span></p>', Convert::toHtml('*a*', $options));
-        self::assertSame('<p><span class="strong">a</span></p>', (new Convert($options))->setText('*a*')->convert()->getText());
+        self::assertSame('<p><span class="strong">a</span></p>', (new Convert($options))->withText('*a*')->convert()->getText());
     }
 
     #[DataProvider('syntaxProvider')]
     public function test_converts_the_syntax(string $input, string $expected): void
     {
-        self::assertSame($expected, (new Convert())->setText($input)->convert()->getText());
+        self::assertSame($expected, (new Convert())->withText($input)->convert()->getText());
     }
 
     #[DataProvider('escapingProvider')]
     public function test_escapes_the_output(string $input, string $expected): void
     {
-        self::assertSame($expected, (new Convert())->setText($input)->convert()->getText());
+        self::assertSame($expected, (new Convert())->withText($input)->convert()->getText());
     }
 
     public function test_raw_html_can_be_kept_on_a_text_that_is_trusted(): void
@@ -327,11 +338,6 @@ final class ConvertTest extends TestCase
         self::assertSame('<p>&lt;b onclick="x"&gt;y&lt;/b&gt;</p>', Convert::toHtml('<b onclick="x">y</b>'));
     }
 
-    public function test_set_text_trims_the_text(): void
-    {
-        self::assertSame('Hello', (new Convert())->setText("  Hello\n")->getText());
-    }
-
     public function test_style_classes_can_be_changed_or_left_out(): void
     {
         $options = new Options(styleClasses: ['*' => 'strong', '-' => 'em']);
@@ -345,5 +351,10 @@ final class ConvertTest extends TestCase
     public function test_styles_can_be_switched_off_but_the_line_break_stays(): void
     {
         self::assertSame("<p>*a* -b-<br>\nc</p>", Convert::toHtml("*a* -b-  \nc", new Options(styleClasses: [])));
+    }
+
+    public function test_with_text_trims_the_text(): void
+    {
+        self::assertSame('Hello', (new Convert())->withText("  Hello\n")->getText());
     }
 }

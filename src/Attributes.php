@@ -33,7 +33,7 @@ final readonly class Attributes
 
         $attributes = self::parse($match[2]);
 
-        return null === $attributes ? [$text, new self()] : [$match[1], $attributes];
+        return $attributes instanceof Attributes ? [$match[1], $attributes] : [$text, new self()];
     }
 
     /**
