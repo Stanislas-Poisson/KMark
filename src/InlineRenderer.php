@@ -5,20 +5,37 @@ declare(strict_types=1);
 namespace KMark;
 
 /**
- * Escapes a text, then converts its links and its images.
+ * Escapes a text, then converts its links, its images, its styles and, if asked, its bare URLs.
  *
  * @internal
  */
-final class InlineRenderer
+final readonly class InlineRenderer
 {
     private const ALLOWED_SCHEMES = ['http', 'https', 'mailto', 'tel', 'ftp'];
+
+    public function __construct(private bool $autoLinks = true)
+    {
+    }
 
     public function render(string $text): string
     {
         $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_SUBSTITUTE);
         $text = preg_replace_callback('/\[([^\]]*)\]:\(([^)]*)\)/', $this->link(...), $text) ?? $text;
+        $text = preg_replace_callback('/!\[([^\]]*)\]\(([^)]*)\)/', $this->image(...), $text) ?? $text;
 
-        return preg_replace_callback('/!\[([^\]]*)\]\(([^)]*)\)/', $this->image(...), $text) ?? $text;
+        // The links and the images that were just written are left as they are.
+        $segments = preg_split('/(<a\b.*?<\/a>|<img\b[^>]*>)/s', $text, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$text];
+        $styles = new TextStyles();
+        $links = new AutoLinker();
+
+        foreach ($segments as $index => $segment) {
+            if (0 === $index % 2) {
+                $segment = $styles->render($segment);
+                $segments[$index] = $this->autoLinks ? $links->render($segment) : $segment;
+            }
+        }
+
+        return implode('', $segments);
     }
 
     /**

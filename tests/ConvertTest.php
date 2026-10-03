@@ -101,6 +101,59 @@ final class ConvertTest extends TestCase
         yield 'code right after a text' => ["Text\n~~\nx\n~~", "<p>Text</p>\n\n<code>x</code>"];
         yield 'unclosed code' => ["~~\ncode", "<p>~~\ncode</p>"];
         yield 'dashes inside a text' => ['a ------ b', '<p>a ------ b</p>'];
+        yield 'bold' => ['* foo *', '<p><span class="b">foo</span></p>'];
+        yield 'italic' => ['- foo -', '<p><span class="i">foo</span></p>'];
+        yield 'underline' => ['_ foo _', '<p><span class="u">foo</span></p>'];
+        yield 'strikethrough' => ['/ foo /', '<p><span class="d">foo</span></p>'];
+        yield 'combined styles' => ['_-* foo *-_', '<p><span class="u i b">foo</span></p>'];
+        yield 'repeated marker' => ['** foo **', '<p><span class="b">foo</span></p>'];
+        yield 'styles inside a text' => [
+            'a * b c * d and / e / f',
+            '<p>a <span class="b">b c</span> d and <span class="d">e</span> f</p>',
+        ];
+        yield 'styles inside a heading, a list, a table and a quote' => [
+            "# * T *\n\n+\t* L *\n\n| * C *\n\n>\t* Q *",
+            '<h1><span class="b">T</span></h1>' . "\n\n" . '<ul><li><span class="b">L</span></li></ul>' . "\n\n"
+                . '<table><tr><td><span class="b">C</span></td></tr></table>' . "\n\n"
+                . '<blockquote><span class="b">Q</span></blockquote>',
+        ];
+        yield 'markers without a space inside' => ['*foo* and _bar_', '<p>*foo* and _bar_</p>'];
+        yield 'closing markers not in the reverse order' => ['_* foo _*', '<p>_* foo _*</p>'];
+        yield 'a marker alone' => ['a - b', '<p>a - b</p>'];
+        yield 'two dashes around words are an italic' => ['a - b - c', '<p>a <span class="i">b</span> c</p>'];
+        yield 'styles are not applied in a code block' => ["~~\n* foo *\n~~", '<code>* foo *</code>'];
+        yield 'styles are not applied in a link text' => ['[* a *]:(b)', '<p><a href="b">* a *</a></p>'];
+        yield 'line break' => ["L1  \nL2", "<p>L1<br>\nL2</p>"];
+        yield 'one trailing space is not a line break' => ["L1 \nL2", "<p>L1 \nL2</p>"];
+        yield 'bare URL' => [
+            'See https://example.com/a?b=1&c=2.',
+            '<p>See <a href="https://example.com/a?b=1&amp;c=2">https://example.com/a?b=1&amp;c=2</a>.</p>',
+        ];
+        yield 'bare URL between parentheses' => [
+            '(https://example.com)',
+            '<p>(<a href="https://example.com">https://example.com</a>)</p>',
+        ];
+        yield 'bare URL that holds parentheses' => [
+            'https://en.wikipedia.org/wiki/PHP_(language), ok',
+            '<p><a href="https://en.wikipedia.org/wiki/PHP_(language)">https://en.wikipedia.org/wiki/PHP_(language)</a>, ok</p>',
+        ];
+        yield 'bare URL between angle brackets' => [
+            '<https://example.com>',
+            '<p>&lt;<a href="https://example.com">https://example.com</a>&gt;</p>',
+        ];
+        yield 'bare URL in a style' => [
+            '* https://example.com *',
+            '<p><span class="b"><a href="https://example.com">https://example.com</a></span></p>',
+        ];
+        yield 'bare URL as the text and the target of a link' => [
+            '[https://example.com]:(https://example.com)',
+            '<p><a href="https://example.com">https://example.com</a></p>',
+        ];
+        yield 'bare URL in the alt text of an image' => [
+            '![https://example.com](https://example.com/a.png)',
+            '<p><img src="https://example.com/a.png" alt="https://example.com"></p>',
+        ];
+        yield 'URL with another scheme' => ['ftp://example.com', '<p>ftp://example.com</p>'];
         yield 'windows line breaks' => ["A\r\n\r\nB", "<p>A</p>\n\n<p>B</p>"];
     }
 
@@ -133,6 +186,21 @@ final class ConvertTest extends TestCase
     public function testEscapesTheOutput(string $input, string $expected): void
     {
         self::assertSame($expected, (new Convert())->setText($input)->convert()->getText());
+    }
+
+    public function testBareUrlsCanBeLeftAlone(): void
+    {
+        $html = (new Convert())->setAutoLinks(false)->setText('See https://example.com')->convert()->getText();
+
+        self::assertSame('<p>See https://example.com</p>', $html);
+    }
+
+    public function testBareUrlsAreLinksByDefault(): void
+    {
+        self::assertSame(
+            '<p><a href="https://example.com">https://example.com</a></p>',
+            (new Convert())->setText('https://example.com')->convert()->getText(),
+        );
     }
 
     public function testSetTextTrimsTheText(): void
