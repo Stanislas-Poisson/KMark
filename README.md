@@ -2,7 +2,7 @@
 
 A custom Markdown parser written in PHP. It extends the usual syntax so that an id and CSS classes can be attached directly to an element, for example `# Title {#myId .class1 .class2}`. It is made for the web: the output is HTML.
 
-> **Status: proof of concept.** KMark was written in 2013 and moved to PHP 7 in 2017. The converter was cleaned and tested ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)) and the text styles were added ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)), but there is no package and no real configuration yet. See [Known limits](#known-limits) and [Roadmap](#roadmap).
+> **Status: proof of concept.** KMark was written in 2013 and moved to PHP 7 in 2017. The converter was cleaned and tested ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)) and the text styles were added ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)), but it is not published as a package yet. See [Known limits](#known-limits) and [Roadmap](#roadmap).
 
 ## Requirements
 
@@ -10,17 +10,23 @@ PHP 8.3 or higher. There is no dependency.
 
 ## Usage
 
-There is no published Composer package yet. Include the file, then convert a text:
+KMark is not published on Packagist yet: there is no release. When it is, it will be installed with `composer require stanislas-poisson/kmark`. Until then, add the repository to your `composer.json`, or include the files yourself.
 
 ```php
 <?php
 
-require 'src/Convert.php';
+use KMark\Convert;
 
-$converter = new KMark\Convert();
+require 'vendor/autoload.php';
 
-echo $converter
-    ->setText("# Title\n\nSome text with a [link]:(https://example.com).\n\n+\tOne\n+\tTwo")
+echo Convert::toHtml("# Title\n\nSome text with a [link]:(https://example.com).\n\n+\tOne\n+\tTwo");
+```
+
+The same with an instance:
+
+```php
+$html = (new Convert())
+    ->setText("# Title")
     ->convert()
     ->getText();
 ```
@@ -72,11 +78,7 @@ A style works in a paragraph, a heading, a list item, a quote and a table cell, 
 
 ### Bare URLs
 
-The `http://` and `https://` URLs written in a text become links. A final `.`, `,`, `;`, `:`, `!`, `?`, `*`, `_`, `~`, `-` or a closing parenthesis that the URL did not open is left outside the link, and the style markers inside a URL are not read. To keep the URLs as text:
-
-```php
-$converter->setAutoLinks(false);
-```
+The `http://` and `https://` URLs written in a text become links. A final `.`, `,`, `;`, `:`, `!`, `?`, `*`, `_`, `~`, `-` or a closing parenthesis that the URL did not open is left outside the link, and the style markers inside a URL are not read. To keep the URLs as text, see the option `autoLinks` below.
 
 ### Id and classes
 
@@ -92,7 +94,33 @@ Only the first id is kept, and only letters, digits, `_` and `-` are accepted in
 
 ### Safety
 
-The input is escaped: HTML written in the text is shown as text, so `<script>` is never executed. Only the links and images with a relative URL or one of the schemes `http`, `https`, `mailto`, `tel` and `ftp` are kept. For any other scheme (`javascript:`, `data:`…), the text of the link is written without the link.
+By default the input is escaped: HTML written in the text is shown as text, so `<script>` is never executed. Only the links and images with a relative URL or an allowed scheme (`http`, `https`, `mailto`, `tel` and `ftp` by default) are kept. For any other scheme (`javascript:`, `data:`…), the text of the link is written without the link.
+
+## Options
+
+The settings are given with an immutable `Options` object, to `Convert::toHtml()` or to the constructor of `Convert`. Use the named arguments to change one:
+
+```php
+use KMark\Convert;
+use KMark\Options;
+
+$options = new Options(
+    autoLinks: false,
+    styleClasses: ['*' => 'strong', '-' => 'em'],
+    allowedSchemes: ['https', 'mailto'],
+);
+
+echo Convert::toHtml('*hello* https://example.com', $options);
+```
+
+| Option | Default | Description |
+| :--- | :--- | :--- |
+| `autoLinks` | `true` | Turn the bare `http://` and `https://` URLs into links. |
+| `styleClasses` | `['*' => 'b', '-' => 'i', '_' => 'u', '~' => 'd']` | The CSS class of each style marker. A marker that is left out is not a style: `[]` switches all the styles off. |
+| `allowedSchemes` | `['http', 'https', 'mailto', 'tel', 'ftp']` | The schemes that a link or an image can have, in lowercase. A relative URL is always allowed. |
+| `unsafeAllowRawHtml` | `false` | Keep the HTML written in the text instead of escaping it. **Never use it on a text you do not trust**: it allows scripts. Code blocks stay escaped. |
+
+An invalid marker, class or scheme throws an `InvalidArgumentException`.
 
 ### Malformed input
 
@@ -102,7 +130,6 @@ KMark never throws on a text. Whatever it does not understand stays in the text,
 
 - **There is no escape character** to write a style marker that would otherwise be read as a style.
 - **An URL cannot contain a closing parenthesis**: the link stops at the first one.
-- **There is almost no configuration**: only the bare URLs can be switched off. The escaping, the schemes and the CSS classes of the styles cannot be changed yet ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
 - A table has no header cell: every cell is a `td`.
 
 ## Development
@@ -116,7 +143,7 @@ composer check   # PHPStan at the maximum level, then PHPUnit
 
 1. Fix the known bugs and clean the application ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)): done.
 2. Add the missing features ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)): done.
-3. Turn KMark into a Composer package with a configuration, for example to switch the automatic links on or off ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
+3. Turn KMark into a Composer package with a configuration ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)): the configuration is done, the release and the publication on Packagist are not.
 
 ## License
 
