@@ -1,220 +1,76 @@
-![KMark Logo](http://www.stanislas-poisson.fr/img/KMark.png "KMark")
-
 # KMark
-Langage: PHP 5 poo 0.5(beta) - 26/02/2013  
-Par [Stanislas Poisson](http://www.stanislas-poisson.fr/ "Stanislas Poisson")
 
-## Introduction
-KMark est une adaptation de la célèbre forme d'écriture MarkDown, qui se base sur une typographie correspondant aux e-mails de type text afin de générer un contenu en html. Etant donner que le MarkDown n'est pas conçu pour réaliser des composition complete et complexe en html, une amélioration divergante était (de mon point de vue) nécéssaire.
+A custom Markdown parser written in PHP. It extends the usual syntax so that an id and CSS classes can be attached directly to an element, for example `# Title {#myId .class1 .class2}`. It is made for the web: the output is HTML.
 
-### Exigence d'installation
-Cette librairie nécessite PHP 5.3 ou supérieur.
+> **Status: proof of concept.** KMark was written in 2013 and moved to PHP 7 in 2017. It works for the basic blocks below, but part of the syntax is broken or disabled, the output is not escaped, and there is no package, no test and no configuration yet. Do not use it on text you do not trust. See [Known issues](#known-issues) and [Roadmap](#roadmap).
 
-Il suffit ensuite de l'inclure via _include(_once)_ ou _require(_once)_ en début de projet.
+## Requirements
 
-### Syntaxe
-#### Titre Hn
-Les éléments de type H1 à H6 sont généré via un ou plusieurs dièses (le nombre déterminant le niveaux du titre) accompagné d'un espace.
+PHP 7.0 or higher. The code has been run on PHP 8.4. There is no dependency.
 
-	# Mon titre
-	<h1>Mon titre</h1>
-	
-	## Mon sous-titre
-	<h2>Mon sous-titre</h2>
+## Usage
 
-#### Liste non-ordonné/ordonné
-##### Liste non-ordonné
-Utiliser un plus accompagné d'une tabulation pour mettre en place une liste non-ordonné, pour mettre des sous-liste, décaler simplement d'une tabulation pour chaque niveau.
+There is no Composer package yet. Include the file, then convert a text:
 
-	+	Elem 1
-	+	Elem 2
-		+	Elem 2.1
-		+	Elem 2.2
-	+	Elem 3
-	<ul>
-		<li>Elem 1</li>
-		<li>Elem 2<ul>
-			<li>Elem 2.1</li>
-			<li>Elem 2.1</li>
-		</ul></li>
-		<li>Elem 3</li>
-	</ul>
+```php
+<?php
 
-##### Liste ordonné
-Utiliser un chiffre suivie d'un point accompagné d'une tabulation pour mettre en place une liste ordonné, pour mettre des sous-liste, décaler simplement d'une tabulation pour chaque niveau.
+require 'KMark.php';
 
-	1.	Elem 1
-	2.	Elem 2
-		1.	Elem 2.1
-		2.	Elem 2.2
-	3.	Elem 3
-	<ol>
-		<li>Elem 1</li>
-		<li>Elem 2<ol>
-			<li>Elem 2.1</li>
-			<li>Elem 2.1</li>
-		</ol></li>
-		<li>Elem 3</li>
-	</ol>
+$converter = new KMark\Convert();
 
-Il est bien entendu possible de mélanger les deux types de listes.
+echo $converter
+    ->setText("# Title\n\nSome text with a [link]:(https://example.com).\n\n+\tOne\n+\tTwo")
+    ->convert()
+    ->getText();
+```
 
-	1.	Elem 1
-	2.	Elem 2
-		+	Elem 2.1
-		+	Elem 2.2
-	3.	Elem 3
-	<ol>
-		<li>Elem 1</li>
-		<li>Elem 2<ul>
-			<li>Elem 2.1</li>
-			<li>Elem 2.1</li>
-		</ul></li>
-		<li>Elem 3</li>
-	</ol>
+Output:
 
-#### Citation:
-Il est toujours intéréssant de pouvoir citer un texte. La mise en place est simple, il suffit d'utiliser le "plus grand que" au début de chaque ligne accompagné d'une tabulation
+```html
+<h1>Title</h1>
 
-	>	Premier ligne de citation
-	>	Deuxieme ligne de citation
-	<blockquote>
-		Premier ligne de citation
-		Deuxieme ligne de citation
-	</blockquote>
+<p>Some text with a <a href="https://example.com" >link</a>.</p>
 
-#### Code:
-L'affichage d'un code html, css, js ou autre se fais via l'implentation autour du code à afficher de plusieurs tilde
+<ul><li>One</li><li>Two</li></ul>
+```
 
-	~~
-	<div>
-		Mon Code <a href="" title=""><span class="b">Que</span> voila</a>.
-	</div>
-	~~
-	<code>
-		<div>
-			Mon Code <a href="" title=""><span class="b">Que</span> voila</a>.
-		</div>
-	</code>
+## Syntax
 
-#### Tableau:
-Le symbole pipe accompagné d'un espace est l'élément detecteur d'un tableau
+The columns show the input and the output of the current code. Indentation inside lists, quotes and tables uses a real tab character.
 
-	| Colonne 1 | Colonne 2
-	| --------- | ---------
-	| Cell 1.1  | Cell 1.2
-	| Cell 2.1  | Cell 2.2
-	<table>
-		<tr>
-			<td>Colonne 1</td>
-			<td>Colonne 2</td>
-		</td>
-		<tr>
-			<td>Cell 1.1</td>
-			<td>Cell 1.2</td>
-		</td>
-		<tr>
-			<td>Cell 2.1</td>
-			<td>Cell 2.2</td>
-		</td>
-	</table>
-En cas de cellule vide, penser a mettre au moins deux espaces consécutifs entre les pipes et un espace apres la pipe, si la derniere collone est la vide.
+| Element | Input | Output |
+| :--- | :--- | :--- |
+| Heading (1 to 6 `#`) | `## Sub title` | `<h2>Sub title</h2>` |
+| Paragraph | text, separated by a blank line | `<p>text</p>` |
+| Unordered list | `+<tab>One`, one more tab per level | `<ul><li>One</li>…</ul>` |
+| Ordered list | `1.<tab>One` | `<ol><li>One</li>…</ol>` |
+| Quote | `><tab>Line` | `<blockquote>Line…</blockquote>` |
+| Code | text between two lines of `~~` | `<code>…</code>`, escaped, tabs as spaces |
+| Table | `\| A \| B`, a separator line, then rows | `<table><tr><td>…</td></tr>…</table>` |
+| Horizontal rule | six dashes or more | `<hr>` |
+| Link | `[Example]:(https://example.com "Title")` | `<a href="https://example.com"  title="Title">Example</a>` |
+| Image | `![alt](https://example.com/a.png)` | `<img src="https://example.com/a.png" alt="alt">` |
 
-#### Trait horizontal
-L'affichage d'un trait horizontal se fait via un ensemble minimale de six tirets d'affilés sur une seul ligne
+Id and classes go at the end of the element, in braces: `# Title {#myId .class1 .class2}` and `![alt](a.png {#myId .class})`.
 
-	------
-	<hr>
+## Known issues
 
-#### Paragraphe
-Les paragraphes sont générer via une ligne vide entre chaques bloc de texte.
+These behaviours were checked by running the code on PHP 8.4.
 
-	Paragraphe 1
-	
-	Paragraphe 2
-	<p>Paragraphe 1</p>
-	<p>paragraphe 2</p>
+- **Id and classes** work on images, but not on links and paragraphs (`Hello {#intro .lead}` stays as text, and a link gets the braces inside its `href`). On headings they work but the attributes are glued together: `<h1 id="monId"class="a b">`.
+- **Text styles are disabled**: bold, italic, underline and strikethrough (`* foo *`, `- foo -`, `_ foo _`, `/ foo /`) and the line break (two trailing spaces) are in the code but commented out, so they are left as plain text.
+- **Nested lists** are not closed correctly: the outer `</li></ul>` can be missing, and a mixed list can produce `<li>B</ul>`.
+- **Code blocks** start with a stray `<br />`.
+- **The input is not escaped**: raw HTML, including `<script>`, goes through to the output. Only the content of code blocks is escaped.
+- The code has no test, duplicates the id and class parsing and does not follow a coding standard.
 
-#### Retour à la ligne
-Les retours à la ligne sont mise en place via un double espaces en fin de ligne de texte
+## Roadmap
 
-	Ma premiere ligne  
-	Ma deuxieme ligne
-	Ma premiere ligne<br>
-	Ma deuxieme ligne
+1. Fix the known bugs and clean the application ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)).
+2. Add the missing features ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)).
+3. Turn KMark into a Composer package with a configuration, for example to switch the automatic links on or off ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
 
-#### Liens
-Les liens se gère via le text à afficher entre crochets accompagné d'un deux-points et entre parenthèses les différentes paramètres.
+## License
 
-	[Stanislas-Poisson.fr]:(http://www.stanislas-poisson.fr/ "Aller sur le site")
-	<a href="http://www.stanislas-poisson.fr/" title="Aller sur le site">Stanislas-Poisson.fr</a>
-
-#### Images
-Les imagesse gère via un point d'exclamation suit du text alternatif entre crochets et entre parenthèses les différentes paramètres.
-
-	![logo de stanislas-poisson.fr](http://www.stanislas-poisson.fr/theme/logo.png)
-	<img src="http://www.stanislas-poisson.fr/theme/logo.png" alt="logo de stanislas-poisson.fr">
-
-#### Stylisation:
-##### Id et Class CSS :
-Il est possible de donner un id et des class css aux-éléments ci-dessous en placant à la toute fin de l'élément un espace puis entre accolades les différents éléments.
-
-	# Mon titre {#monId .maClass01 .maClass02}
-	<h1 id="monId" class="maClass01 maClass02">Mon titre</h1>
-
-+ Titre Hn
-+ Liste non-ordonné/ordonné
-+ Citation
-+ Code
-+ Tableau
-+ Paragraphe
-
-Il est possible de donner un id et des class css aux-éléments ci-dessous en placant à la fin de la parenthese un espace puis entre accolades les différents éléments.
-
-	[Stanislas-Poisson.fr]:(http://www.stanislas-poisson.fr/ "Aller sur le site" {#monId .maClass})
-	<a href="http://www.stanislas-poisson.fr/" title="Aller sur le site" id="monId" class="maClass">Stanislas-Poisson.fr</a>
-	![logo de stanislas-poisson.fr](http://www.stanislas-poisson.fr/theme/logo.png {#monId .maClass})
-	<img src="http://www.stanislas-poisson.fr/theme/logo.png" alt="logo de stanislas-poisson.fr" id="monId" class="maClass">
-
-+ Liens
-+ Images
-
-##### Gras :
-Utiliser un astérisque accompagné d'un espace autour du mot ou de l'ensemble de mots à mettre en gras. L'ensemble sera mis dans un span ayant pour class **_b_**.
-
-	* foo *
-	<span class="b">foo</span>
-
-##### Italique :
-Utiliser un tiret accompagné d'un espace autour du mot ou de l'ensemble de mots à mettre en italique. L'ensemble sera mis dans un span ayant pour class **_i_**.
-
-	- foo -
-	<span class="i">foo</span>
-
-##### Souligné :
-Utiliser une underscore accompagné d'un espace autour du mot ou de l'ensemble de mots à mettre en souligné. L'ensemble sera mis dans un span ayant pour class **_u_**.
-
-	_ foo _
-	<span class="u">foo</span>
-
-##### Barré :
-Utiliser une slash accompagné d'un espace autour du mot ou de l'ensemble de mots à mettre en barré. L'ensemble sera mis dans un span ayant pour class **_d_**.
-
-	/ foo /
-	<span class="d">foo</span>
-
-Il est bien entendu possible de cumulés les styles ci-dessus, le span ayant alors les classe css demandées.
-
-	_-* foo *-_
-	<span class="u i b">foo</span>
-
-
-
-### Copyright et Licence
-
-Copyright © 2013 - Stanislas Poisson  
-[www.stanislas-poisson.fr](http://www.stanislas-poisson.fr "Stanislas Poisson")  
-Tous droits réservés.
-
-Ce logiciel est fourni par M. Poisson Stanislas "tel quel" et aucune garantie expresse ou implicite, y compris, mais sans s'y limiter, les garanties implicites de qualité marchande et d'adéquation à un usage particulier sont rejetées.  
-En aucun cas, le propriétaire du copyright ou contributeurs peut être tenu responsable des dommages directs, indirects, fortuits, spéciaux, exemplaires ou consécutifs (y compris, mais sans s'y limiter, l'achat de biens ou services de substitution, la perte d'utilisation, de données ou de profits; ou interruption d'activité) résultant et sur toute théorie de responsabilité, qu'elle soit contractuelle, de responsabilité stricte ou délictuelle (y compris la négligence ou autre) découlant de quelque façon de l'utilisation de ce logiciel, même si elle est notifiée de l'éventualité de tels dommages.
+[MIT](LICENSE). Copyright (c) 2013 Stanislas Poisson.
