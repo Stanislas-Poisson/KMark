@@ -1,415 +1,401 @@
 <?php
-/**
-* KMark is an adaptation of the syntax MarkDown, dedicated to Web,
-* allowing to give parameters has all the elements directly.
-* Validity php 7.0.1 - http://sandbox.onlinephpfunctions.com/
-* Copyright © 2013 Stanislas Poisson - Licence MIT
-* https://stanislas-poisson.fr
-*/
+
+declare(strict_types=1);
+
 namespace KMark;
 
-class Convert{
+/**
+ * KMark is an adaptation of the Markdown syntax, dedicated to the web,
+ * that allows to set an id and CSS classes on every element.
+ *
+ * Copyright (c) 2013 Stanislas Poisson - MIT license
+ * https://stanislas-poisson.fr
+ */
+final class Convert
+{
+    private const ALLOWED_SCHEMES = ['http', 'https', 'mailto', 'tel', 'ftp'];
 
-	public function setText( string $text = '' )
-	{
-		$this->text = trim( $text );
+    private string $text = '';
 
-		return $this;
-	}
+    public function setText(string $text = ''): self
+    {
+        $this->text = trim($text);
 
-	public function getText(): string
-	{
-		return $this->text;
-	}
+        return $this;
+    }
 
-	private $text;
+    public function getText(): string
+    {
+        return $this->text;
+    }
 
-	private $_regex = [
-		'stylish' => '/([\*_\-\/]+) ([\w\d\s"<=:\/\.>]+) (?:[\*_\-\/]+)/',
-		'clean' => [
-			'str' => [
-				"\r\n" => "\n",
-			],
-			'preg' => [
-				"/\n{3,}/" => "\n\n",
-				"/\n *\n/" => "\n\n",
-				'/"$/' => '\" ',
-				'{\r\n?}' => "\n",
-			],
-		],
-		'links' => '/\[([^:]*)\]:\(([^\)]*)\)/',
-		'link' => [
-			'idClass' => '/(.*)
-			{(.*)}$/s',
-			'titleText' => '/(.*)[ ]*"(.*)"$/',
-			'alt' => '/\[([^\]]*)/s',
-		],
-		'images' => '/!\[([^\]]*)\]\(([^\)]*)\)/',
-	];
+    public function convert(): self
+    {
+        $blocks = [];
+        foreach ($this->splitBlocks($this->clean($this->text)) as $block) {
+            $blocks[] = $this->renderBlock($block);
+        }
 
-	public function convert()
-	{
-		$this->cleanWhiteSpace();
-		$this->cleanWhiteSpace()->links();
-		$this->cleanWhiteSpace()->links()->images();
-		$this->cleanWhiteSpace()->links()->images()->blocks();
-		/*$this->cleanWhiteSpace()->links()->images()->blocks()->briste();
-		/*$this->cleanWhiteSpace()->links()->images()->blocks()->briste()->stylish();*/
-		return $this;
-	}
+        $this->text = implode("\n\n", $blocks);
 
-	private function cleanWhiteSpace()
-	{
-		foreach ( $this->_regex[ 'clean' ][ 'str' ] as $key => $value ) {
-			$this->text = str_replace( $key, $value, $this->text );
-		}
-		foreach ( $this->_regex[ 'clean' ][ 'preg' ] as $key => $value ) {
-			$this->text = preg_replace( $key, $value, $this->text );
-		}
-		return $this;
-	}
+        return $this;
+    }
 
-	private function links()
-	{
-		$this->text = preg_replace_callback( $this->_regex[ 'links' ], array( &$this, '_link' ), $this->text );
-		return $this;
-	}
+    /**
+     * Unifies the line breaks and keeps at most one blank line between two blocks.
+     */
+    private function clean(string $text): string
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = $this->replace('/\n *\n/', "\n\n", $text);
 
-	private function _link( array $link ): string
-	{
-		$title = $id = $class = '';
-		$alt = $link[ 1 ];
-		$txt = $link[ 2 ];
-		preg_match( $this->_regex[ 'link' ][ 'idClass' ], $link[ 2 ] ,$result );
-		if ( isset( $result[ 1 ] ) ) {
-			$txt = $result[ 1 ];
-			$p = explode( ' ', $result[ 2 ] );
-			foreach ( $p as $po ) {
-				if ( substr( $po, 0, 1 ) == '#' ) {
-					( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-				} else {
-					$class .= ' ' . substr( $po, 1 );
-				}
-			}
-			( $class != '' ) ? $class = ' class="' . trim( $class ) . '"' : '';
-		}
-		preg_match( $this->_regex[ 'link' ][ 'titleText' ], $txt, $result );
-		if ( isset( $result[ 1 ] ) ) {
-			$title = ' title="' . trim( $result[ 2 ] ) . '"';
-			$txt = $result[ 1 ];
-		}
-		preg_match( $this->_regex[ 'link' ][ 'alt' ], $link[ 1 ], $result );
-		if ( isset( $result[ 1 ] ) ) {
-			$alt = $result[ 1 ];
-		}
-		return '<a href="' . trim( $txt ) . '" ' . $title . $id . $class . '>' . $link[ 1 ] . '</a>';
-			}
+        return $this->replace('/\n{3,}/', "\n\n", $text);
+    }
 
-	private function images()
-	{
-		$this->text = preg_replace_callback( $this->_regex[ 'images' ], array( &$this,'_img' ), $this->text );
-		return $this;
-	}
+    /**
+     * Splits the text on the blank lines, except inside a fenced code block.
+     *
+     * @return list<string>
+     */
+    private function splitBlocks(string $text): array
+    {
+        $blocks = [];
+        $current = [];
+        $inCode = false;
 
-	private function _img( $img )
-	{
-		$id = $class = '';
-		$txt = $img[ 2 ];
-		preg_match( '/(.*) {(.*)}$/s', $img[ 2 ], $result );
-		if ( isset( $result[ 1 ] ) ) {
-			$txt = $result[ 1 ];
-			$p = explode( ' ', $result[ 2 ] );
-			foreach ( $p as $po ) {
-				if ( substr( $po, 0, 1 ) == '#' ) {
-					( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-				} else {
-					$class .= ' ' . substr( $po, 1);
-				}
-			}
-			( $class != '' ) ? $class = ' class="' . trim( $class ) . '"' : '';
-		}
-		return'<img src="' . $txt . '" alt="' . $img[ 1 ] . '"' . $id . $class . '>';
-			}
+        foreach (explode("\n", $text) as $line) {
+            if (1 === preg_match('/^~{2,}\s*$/', $line)) {
+                if (!$inCode && [] !== $current) {
+                    $blocks[] = implode("\n", $current);
+                    $current = [];
+                }
 
-	private function blocks()
-	{
-		$a = preg_split( '/\n{2,}/', $this->text, -1, PREG_SPLIT_NO_EMPTY );
-		foreach( $a as $v )
-		{
-			if ( preg_match( '/^([#]{1,6}) (.*)/', $v, $result ) )
-			{
-				$this->text = str_replace( $v, $this->_helem( $result ), $this->text );
-			} else if( preg_match( '/^[\+|\d\.]+\t(.*)/', $v ) )
-			{
-				$this->text = str_replace( $v, $this->_liste( $v ), $this->text );
-			} else if ( preg_match_all( '/^>\t(.*)/m', $v, $result ) )
-			{
-				$this->text = str_replace( $v, $this->_citation( $result ), $this->text );
-			} else if ( preg_match_all( '/[~~]{2,}([^~]*)[~~]{2,}/', $v, $result ) )
-			{
-				$this->text = str_replace( $v, $this->_code( $result ), $this->text );
-			} else if ( preg_match_all( '/^(\|[^\n]*)/m', $v, $result ) )
-			{
-				$this->text = str_replace( $v, $this->_tableau( $result ), $this->text );
-			} else if ( preg_match( '/([\-]{6,})/', $v ) )
-			{
-				$this->text = str_replace( $v, '<hr>', $this->text );
-			} else{
-				$this->text = str_replace( $v, $this->_paragraphe( $v ), $this->text );
-			}
-		}
-		return $this;
-	}
+                $inCode = !$inCode;
+                $current[] = $line;
 
-	private function _paragraphe( $text )
-	{
-		$id = $class = '';
-		$txt = $text;
-		preg_match( '/(.*)
-			{(.*)}$/s', $text, $result );
-		if ( isset( $result[ 1 ] ) )
-		{
-			$txt = $result[ 1 ];
-			$p = explode( ' ', $result[ 2 ] );
-			foreach ( $p as $po )
-			{
-				if ( substr( $po, 0, 1 ) == '#' )
-				{
-					( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-				} else {
-					$class .= ' ' . substr( $po, 1 );
-				}
-			}
-			( $class != '' ) ? $class = ' class="' . trim( $class ) . '"' : '';
-		}
-		return '<p' . $id . $class . '>' . $txt . '</p>';
-	}
+                if (!$inCode) {
+                    $blocks[] = implode("\n", $current);
+                    $current = [];
+                }
 
-	private function _tableau( $text )
-	{
-		$return = '<table>';
-		$text = preg_grep( '/([\| ?\| [\-]+)$/', $text[ 0 ], PREG_GREP_INVERT );
-		foreach ( $text as $v )
-		{
-			$return .= '<tr>';
-			preg_match_all( '/\| ([^\|]+)/', $v, $a );
-			foreach ( $a[ 1 ] as $x )
-			{
-				$return .= '<td>' . trim( $x ) . '</td>';
-			}
-			$return .= '</tr>';
-		}
-		return $return . '</table>';
-	}
+                continue;
+            }
 
-	private function _code( $text )
-	{
-		return '<code>' . nl2br( str_replace( '	', '&nbsp;&nbsp;&nbsp;&nbsp;', htmlspecialchars( $text[ 1 ][ 0 ] ) ) ) . '</code>';
-	}
+            if (!$inCode && '' === trim($line)) {
+                if ([] !== $current) {
+                    $blocks[] = implode("\n", $current);
+                    $current = [];
+                }
 
-	private function _citation( $text )
-	{
-		$id = $class = $t = '';
-		foreach ( $text[ 1 ] as $v )
-		{
-			preg_match( '/(.*)
-				{(.*)}$/s', $v, $result );
-			if ( isset( $result[ 1 ] ) )
-			{
-				$v = $result[ 1 ];
-				$p = explode( ' ', $result[ 2 ] );
-				foreach ( $p as $po )
-				{
-					if ( substr( $po, 0, 1) == '#' )
-					{
-						( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-					} else {
-						$class .= ' ' . substr( $po, 1 );
-					}
-				}
-				( $class != '' ) ? $class = ' class="' . trim( $class ) . '"' : '';
-			}
-			$t .= $v . "\n";
-		}
-		return '<blockquote' . $id . $class . '>' . $t . '</blockquote>';
-	}
+                continue;
+            }
 
-	private function _liste( $a )
-	{
-		$return = '';
-		$niveau = 0;
-		$i = 0;
-		$types = $azerty = [];
-		$b = preg_split( '/\n(?:([\t]*)(\+|(?:\d*)\.)\t)/', $a, -1, PREG_SPLIT_DELIM_CAPTURE );
-		foreach( $b as $v )
-		{
-			if( !isset( $azerty[ 0 ] ) )
-			{
-				$azerty[ $i ] = $v;
-				$i++;
-			} else {
-				$azerty[ $i ][] = $v;
-				if ( isset( $azerty[ $i ][ 2 ] ) )
-				{
-					$i++;
-				}
-			}
-		}
-		foreach ( $azerty as $v )
-		{
-			if ( $return != '' )
-			{
-				if ( strlen( $v[ 0 ] ) == $niveau )
-				{
-					$id = $class = '';
-					$txt = $v[ 2 ];
-					$return .= '</li>';
-					preg_match( '/(.*)
-						{(.*)}/s', $v[ 2 ], $w );
-					if ( isset( $w[ 1 ] ) )
-					{
-						$txt = $w[ 1 ];
-						$p = explode( ' ', $w[ 2 ] );
-						foreach ( $p as $po )
-						{
-							if ( substr( $po, 0, 1 ) == '#' )
-							{
-								( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-							} else {
-								$class .= ' ' . substr( $po, 1 );
-							}
-						}
-						( $class != '' ) ? $class = ' class="' . trim( $class ) . '"' : '';
-					}
-					$return .= '<li' . $id . $class . '>' . $txt;
-				} else if ( strlen( $v[ 0 ] ) > $niveau )
-				{
-					$id = $class = '';
-					$txt = $v[ 2 ];
-					$niveau++;
-					( strlen( $v[ 1 ]) == 1 ) ? $types[ $niveau ] = 'ul' : $types[ $niveau ] = 'ol';
-					$return .= '<' . $types[ $niveau ] . '>';
-					preg_match( '/(.*)
-						{(.*)}/s', $v[ 2 ], $w );
-					if ( isset( $w[ 1 ] ) )
-					{
-						$txt = $w[ 1 ];
-						$p = explode( ' ', $w[ 2 ] );
-						foreach ( $p as $po )
-						{
-							if ( substr( $po, 0, 1 ) == '#' )
-							{
-								( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-							} else {
-								$class .= ' ' . substr( $po, 1 );
-							}
-						}
-						( $class != '' ) ? $class = ' class=" ' . trim( $class ) . '"' : '';
-					}
-					$return .= '<li' . $id . $class . '>' . $txt;
-				} else if ( strlen( $v[ 0 ] ) < $niveau )
-				{
-					$id = $class = '';
-					$txt = $v[ 2 ];
-					$return .= '</' . $types[ $niveau ] . '></li>';
-					unset( $types[ $niveau ] );
-					$niveau--;
-					preg_match( '/(.*)
-						{(.*)}/s', $v[ 2 ], $w );
-					if ( isset( $w[ 1 ] ) )
-					{
-						$txt = $w[ 1 ];
-						$p = explode( ' ', $w[ 2 ] );
-						foreach ( $p as $po )
-						{
-							if ( substr( $po, 0, 1) == '#' )
-							{
-								( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-							} else {
-								$class .= ' ' . substr( $po , 1 );
-							}
-						}
-						( $class != '' ) ? $class = ' class="' . trim( $class ) . '"' : '';
-					}
-					$return .= '<li' . $id . $class . '>' . $txt;
-				}
-			} else {
-				$id = $class = '';
-				preg_match( '/(\+|(?:\d*)\.)\t(.*)/s', $v, $x );
-				$txt = $x[ 2 ];
-				( strlen( $x[ 1 ] ) == 1 ) ? $types[ $niveau ] = 'ul' : $types[ $niveau ] = 'ol';
-				$return .= '<' . $types[ $niveau ] . '>';
-				preg_match( '/(.*){(.*)}/s', $x[ 2 ], $w );
-				if ( isset( $w[ 1 ] ) )
-				{
-					$txt = $w[ 1 ];
-					$p = explode( ' ', $w[ 2 ] );
-					foreach ( $p as $po )
-					{
-						if( substr( $po, 0, 1 ) == '#' )
-						{
-							( $id == '' ) ? $id = ' id="' . substr( $po, 1 ) . '"' : '';
-						} else {
-							$class .= ' ' . substr( $po, 1 );
-						}
-					}
-					( $class != '' ) ? $class = ' class="' . trim( $class ) . '"' : '';
-				}
-				$return .= '<li' . $id . $class . '>' . $txt;
-			}
-		}
-		return $return . '</li></' . $types[ $niveau ] . '>';
-	}
+            $current[] = $line;
+        }
 
-	private function _helem( $result )
-	{
-		$classCss = $id = '';
-		preg_match( '/{([#\.\w\d\s]*)}$/', $result[ 2 ], $class );
-		if ( count( $class ) != 0 )
-		{
-			$c = explode( ' ', trim( $class[ 1 ] ) );
-			foreach ( $c as $x )
-			{
-				if ( substr( $x, 0, 1 ) == '#' )
-				{
-					( $id == '' ) ? $id = ' id="' . substr( $x, 1 ) . '"' : '';
-				} else {
-					( $classCss == '' ) ? $classCss = ' class="' : '';
-					$classCss .= substr( $x, 1 ) . ' ';
-				}
-			}
-			( $classCss != '' ) ? $classCss = trim( $classCss ) . '"' : '';
-		}
-		return '<h' . strlen( $result[ 1 ] ) . $id . $classCss . '>' . trim( str_replace( $class, '', $result[ 2 ] ) ) . '</h' . strlen( $result[ 1 ] ) . '>';
-	}
+        if ([] !== $current) {
+            $blocks[] = implode("\n", $current);
+        }
 
-	private function briste()
-	{
-		$this->text = preg_replace( '/([\s]{2}[\r\n])/', '<br>' ,$this->text);
-		return $this;
-	}
+        return $blocks;
+    }
 
-	private function stylish()
-	{
-		$this->text = preg_replace_callback( $this->_regex[ 'stylish' ], array( &$this,'_stylishCompile' ), $this->text );
-	}
+    private function renderBlock(string $block): string
+    {
+        $lines = explode("\n", $block);
 
-	private function _stylishCompile( $text )
-	{
-		$class = [
-			'*' => ' b',
-			'_' => ' u',
-			'-' => ' i',
-			'/' => ' d',
-		];
-		$a = $text[ 1 ];
-		$b = strlen( $a );
-		$r = '';
-		for ( $i = 0; $i < $b; $i++ )
-		{
-			$r .= $class[ substr( $a, $i, 1 ) ];
-		}
-		return '<span class="' . trim( $r ) . '">' . $text[ 2 ] . '</span>';
-	}
+        if (1 === preg_match('/^(#{1,6}) (.*)$/', $lines[0], $heading)) {
+            $html = $this->renderHeading(strlen($heading[1]), $heading[2]);
+            $rest = array_slice($lines, 1);
+
+            return [] === $rest ? $html : $html . "\n" . $this->renderBlock(implode("\n", $rest));
+        }
+
+        if (1 === preg_match('/^(\+|\d+\.)\t/', $lines[0])) {
+            return $this->renderList($lines);
+        }
+
+        if (1 === preg_match('/^>\t/', $lines[0])) {
+            return $this->renderQuote($lines);
+        }
+
+        if (count($lines) >= 2 && 1 === preg_match('/^~{2,}\s*$/', $lines[0]) && 1 === preg_match('/^~{2,}\s*$/', $lines[count($lines) - 1])) {
+            return $this->renderCode(array_slice($lines, 1, -1));
+        }
+
+        if (str_starts_with($lines[0], '|')) {
+            return $this->renderTable($lines);
+        }
+
+        if (1 === preg_match('/^-{6,}$/', trim($block))) {
+            return '<hr>';
+        }
+
+        [$text, $attributes] = $this->extractAttributes($block);
+
+        return '<p' . $attributes . '>' . $this->inline($text) . '</p>';
+    }
+
+    private function renderHeading(int $level, string $text): string
+    {
+        [$text, $attributes] = $this->extractAttributes($text);
+
+        return '<h' . $level . $attributes . '>' . $this->inline(trim($text)) . '</h' . $level . '>';
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    private function renderList(array $lines): string
+    {
+        /** @var list<array{int, string, string}> $items */
+        $items = [];
+
+        foreach ($lines as $line) {
+            if (1 === preg_match('/^(\t*)(\+|\d+\.)\t(.*)$/', $line, $item)) {
+                $items[] = [strlen($item[1]), '+' === $item[2] ? 'ul' : 'ol', $item[3]];
+
+                continue;
+            }
+
+            if ([] !== $items) {
+                $last = count($items) - 1;
+                $items[$last] = [$items[$last][0], $items[$last][1], $items[$last][2] . "\n" . $line];
+            }
+        }
+
+        $html = '';
+        /** @var list<string> $open the type of each opened list, from the outermost */
+        $open = [];
+
+        foreach ($items as [$level, $type, $text]) {
+            $level = min($level, count($open));
+
+            while (count($open) > $level + 1) {
+                $html .= '</li></' . array_pop($open) . '>';
+            }
+
+            if (count($open) === $level + 1) {
+                $html .= '</li>';
+
+                if ($open[$level] !== $type) {
+                    $html .= '</' . array_pop($open) . '><' . $type . '>';
+                    $open[] = $type;
+                }
+            } else {
+                $html .= '<' . $type . '>';
+                $open[] = $type;
+            }
+
+            [$text, $attributes] = $this->extractAttributes($text);
+            $html .= '<li' . $attributes . '>' . $this->inline($text);
+        }
+
+        while ([] !== $open) {
+            $html .= '</li></' . array_pop($open) . '>';
+        }
+
+        return $html;
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    private function renderQuote(array $lines): string
+    {
+        $id = '';
+        $classes = [];
+        $content = [];
+
+        foreach ($lines as $line) {
+            $line = 1 === preg_match('/^>\t(.*)$/', $line, $quote) ? $quote[1] : $line;
+            [$line, $lineId, $lineClasses] = $this->parseAttributes($line);
+
+            if ('' === $id) {
+                $id = $lineId;
+            }
+
+            $classes = [...$classes, ...$lineClasses];
+            $content[] = $this->inline($line);
+        }
+
+        return '<blockquote' . $this->renderAttributes($id, $classes) . '>' . implode("\n", $content) . '</blockquote>';
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    private function renderCode(array $lines): string
+    {
+        $content = [];
+
+        foreach ($lines as $line) {
+            $content[] = str_replace("\t", '&nbsp;&nbsp;&nbsp;&nbsp;', htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE));
+        }
+
+        return '<code>' . implode("<br />\n", $content) . '</code>';
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    private function renderTable(array $lines): string
+    {
+        $html = '<table>';
+
+        foreach ($lines as $line) {
+            if (!str_starts_with($line, '|') || 1 === preg_match('/^[| -]+$/', $line)) {
+                continue;
+            }
+
+            preg_match_all('/\| ([^|]+)/', $line, $cells);
+            $html .= '<tr>';
+
+            foreach ($cells[1] as $cell) {
+                $html .= '<td>' . $this->inline(trim($cell)) . '</td>';
+            }
+
+            $html .= '</tr>';
+        }
+
+        return $html . '</table>';
+    }
+
+    /**
+     * Escapes the text, then converts the links and the images.
+     */
+    private function inline(string $text): string
+    {
+        $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_SUBSTITUTE);
+        $text = preg_replace_callback('/\[([^\]]*)\]:\(([^)]*)\)/', $this->renderLink(...), $text) ?? $text;
+
+        return preg_replace_callback('/!\[([^\]]*)\]\(([^)]*)\)/', $this->renderImage(...), $text) ?? $text;
+    }
+
+    /**
+     * @param array<int|string, string> $match
+     */
+    private function renderLink(array $match): string
+    {
+        [$target, $attributes] = $this->extractAttributes($match[2]);
+        $title = '';
+
+        if (1 === preg_match('/^(.*?)\s*"(.*)"$/s', $target, $parts)) {
+            $target = $parts[1];
+            $title = trim($parts[2]);
+        }
+
+        $url = trim($target);
+
+        if (!$this->isSafeUrl($url)) {
+            return $match[1];
+        }
+
+        $html = '<a href="' . $this->quote($url) . '"';
+
+        if ('' !== $title) {
+            $html .= ' title="' . $this->quote($title) . '"';
+        }
+
+        return $html . $attributes . '>' . $match[1] . '</a>';
+    }
+
+    /**
+     * @param array<int|string, string> $match
+     */
+    private function renderImage(array $match): string
+    {
+        [$target, $attributes] = $this->extractAttributes($match[2]);
+        $url = trim($target);
+
+        if (!$this->isSafeUrl($url)) {
+            return $match[1];
+        }
+
+        return '<img src="' . $this->quote($url) . '" alt="' . $this->quote($match[1]) . '"' . $attributes . '>';
+    }
+
+    /**
+     * Accepts the relative URLs and the ones with a known scheme, so that
+     * "javascript:" and "data:" never reach an attribute.
+     */
+    private function isSafeUrl(string $url): bool
+    {
+        $compact = $this->replace('/[\x00-\x20]+/', '', $url);
+
+        if (1 !== preg_match('/^([a-z][a-z0-9+.\-]*):/i', $compact, $scheme)) {
+            return true;
+        }
+
+        return in_array(strtolower($scheme[1]), self::ALLOWED_SCHEMES, true);
+    }
+
+    /**
+     * The text is already escaped, only the double quote can end an attribute.
+     */
+    private function quote(string $value): string
+    {
+        return str_replace('"', '&quot;', $value);
+    }
+
+    /**
+     * Takes the "{#id .class}" block off the end of a text.
+     *
+     * @return array{string, string} the text, and the attributes ready to be written in a tag
+     */
+    private function extractAttributes(string $text): array
+    {
+        [$text, $id, $classes] = $this->parseAttributes($text);
+
+        return [$text, $this->renderAttributes($id, $classes)];
+    }
+
+    /**
+     * @return array{string, string, list<string>} the text, the id and the classes
+     */
+    private function parseAttributes(string $text): array
+    {
+        if (1 !== preg_match('/^(.*?)\s*\{([#.\w\s-]*)\}\s*$/s', $text, $match)) {
+            return [$text, '', []];
+        }
+
+        $id = '';
+        $classes = [];
+        $tokens = preg_split('/\s+/', trim($match[2]), -1, PREG_SPLIT_NO_EMPTY);
+
+        if (false === $tokens || [] === $tokens) {
+            return [$text, '', []];
+        }
+
+        foreach ($tokens as $token) {
+            $name = substr($token, 1);
+
+            if (1 !== preg_match('/^[\w-]+$/', $name) || !in_array($token[0], ['#', '.'], true)) {
+                return [$text, '', []];
+            }
+
+            if ('#' === $token[0]) {
+                $id = '' === $id ? $name : $id;
+            } else {
+                $classes[] = $name;
+            }
+        }
+
+        return [$match[1], $id, $classes];
+    }
+
+    /**
+     * @param list<string> $classes
+     */
+    private function renderAttributes(string $id, array $classes): string
+    {
+        $html = '' === $id ? '' : ' id="' . $id . '"';
+
+        return [] === $classes ? $html : $html . ' class="' . implode(' ', $classes) . '"';
+    }
+
+    private function replace(string $pattern, string $replacement, string $subject): string
+    {
+        return preg_replace($pattern, $replacement, $subject) ?? $subject;
+    }
 }
-?>
