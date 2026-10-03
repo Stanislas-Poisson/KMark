@@ -26,7 +26,8 @@ final readonly class TextStyles
     {
         if ([] !== $this->classes) {
             $markers = '[' . preg_quote(implode('', array_keys($this->classes)), '/') . ']+';
-            $text    = preg_replace_callback('/(?<!\w)(' . $markers . ')(\S(?:[^\n]*?\S)??)(' . $markers . ')(?!\w)/', $this->style(...), $text) ?? $text;
+            $pattern = '/(?<!\w)(' . $markers . ')(\S(?:[^\n]*?\S)??)(' . $markers . ')(?!\w)/';
+            $text    = preg_replace_callback($pattern, $this->style(...), $text) ?? $text;
         }
 
         return preg_replace('/ {2,}\n/', "<br>\n", $text) ?? $text;

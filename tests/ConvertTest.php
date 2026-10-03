@@ -96,7 +96,7 @@ final class ConvertTest extends TestCase
 
         yield 'heading with id and classes' => ['# Mon titre {#monId .a .b}', '<h1 id="monId" class="a b">Mon titre</h1>'];
 
-        yield 'heading followed by a text' => ["# T\ntext", "<h1>T</h1>\n<p>text</p>"];
+        yield 'heading followed by a text' => ["# T\ntext", "<h1>T</h1>\n\n<p>text</p>"];
 
         yield 'paragraph with id and classes' => ['Hello {#intro .lead}', '<p id="intro" class="lead">Hello</p>'];
 

@@ -35,19 +35,41 @@ final readonly class Options
         public array $styleClasses = self::DEFAULT_STYLE_CLASSES,
         public array $allowedSchemes = ['http', 'https', 'mailto', 'tel', 'ftp'],
     ) {
+        self::assertStyleClasses($styleClasses);
+        self::assertSchemes($allowedSchemes);
+    }
+
+    /**
+     * @param list<string> $allowedSchemes
+     */
+    private static function assertSchemes(array $allowedSchemes): void
+    {
+        foreach ($allowedSchemes as $allowedScheme) {
+            if (1 !== preg_match('/^[a-z][a-z0-9+.\-]*$/', $allowedScheme)) {
+                throw new InvalidArgumentException(sprintf(
+                    '"%s" is not a valid scheme: use lowercase letters, digits, "+", "." and "-".',
+                    $allowedScheme,
+                ));
+            }
+        }
+    }
+
+    /**
+     * @param array<string, string> $styleClasses
+     */
+    private static function assertStyleClasses(array $styleClasses): void
+    {
         foreach ($styleClasses as $marker => $class) {
             if (! array_key_exists($marker, self::DEFAULT_STYLE_CLASSES)) {
-                throw new InvalidArgumentException(sprintf('"%s" is not a style marker: use "*", "-", "_" or "~".', $marker));
+                throw new InvalidArgumentException(
+                    sprintf('"%s" is not a style marker: use "*", "-", "_" or "~".', $marker),
+                );
             }
 
             if (1 !== preg_match('/^[\w-]+$/', $class)) {
-                throw new InvalidArgumentException(sprintf('"%s" is not a valid CSS class: use letters, digits, "_" and "-".', $class));
-            }
-        }
-
-        foreach ($allowedSchemes as $allowedScheme) {
-            if (1 !== preg_match('/^[a-z][a-z0-9+.\-]*$/', $allowedScheme)) {
-                throw new InvalidArgumentException(sprintf('"%s" is not a valid scheme: use lowercase letters, digits, "+", "." and "-".', $allowedScheme));
+                throw new InvalidArgumentException(
+                    sprintf('"%s" is not a valid CSS class: use letters, digits, "_" and "-".', $class),
+                );
             }
         }
     }

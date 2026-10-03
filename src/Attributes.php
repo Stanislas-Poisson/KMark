@@ -31,31 +31,9 @@ final readonly class Attributes
             return [$text, new self()];
         }
 
-        $tokens = preg_split('/\s+/', trim($match[2]), -1, PREG_SPLIT_NO_EMPTY);
+        $attributes = self::parse($match[2]);
 
-        if (false === $tokens || [] === $tokens) {
-            return [$text, new self()];
-        }
-
-        $id      = '';
-        $classes = [];
-
-        foreach ($tokens as $token) {
-            $name = substr($token, 1);
-
-            if (1 !== preg_match('/^[\w-]+$/', $name) || ! in_array($token[0], ['#', '.'], true)) {
-                return [$text, new self()];
-            }
-
-            if ('#' === $token[0]) {
-                $id = '' === $id ? $name : $id;
-            }
-            else {
-                $classes[] = $name;
-            }
-        }
-
-        return [$match[1], new self($id, $classes)];
+        return null === $attributes ? [$text, new self()] : [$match[1], $attributes];
     }
 
     /**
@@ -74,5 +52,31 @@ final readonly class Attributes
         $html = '' === $this->id ? '' : ' id="' . $this->id . '"';
 
         return [] === $this->classes ? $html : $html . ' class="' . implode(' ', $this->classes) . '"';
+    }
+
+    /**
+     * @param list<array<int, string>> $tokens
+     *
+     * @return list<string> the names that start with a marker
+     */
+    private static function names(array $tokens, string $marker): array
+    {
+        $tokens = array_filter($tokens, static fn (array $token): bool => $marker === $token[1]);
+
+        return array_values(array_map(static fn (array $token): string => $token[2], $tokens));
+    }
+
+    /**
+     * @return self|null the attributes, or null if the names are not valid
+     */
+    private static function parse(string $names): ?self
+    {
+        if (1 !== preg_match('/^[#.][\w-]+(?:\s+[#.][\w-]+)*$/', trim($names))) {
+            return null;
+        }
+
+        preg_match_all('/([#.])([\w-]+)/', $names, $tokens, PREG_SET_ORDER);
+
+        return new self(self::names($tokens, '#')[0] ?? '', self::names($tokens, '.'));
     }
 }

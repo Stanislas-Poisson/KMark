@@ -52,7 +52,8 @@ final readonly class InlineRenderer
             return $match[1];
         }
 
-        return '<img src="' . $this->quote($url) . '" alt="' . $this->quote($match[1]) . '"' . $attributes->render() . '>';
+        return '<img src="' . $this->quote($url) . '" alt="' . $this->quote($match[1]) . '"'
+            . $attributes->render() . '>';
     }
 
     /**

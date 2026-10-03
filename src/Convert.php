@@ -27,7 +27,7 @@ final class Convert
 
     public function convert(): self
     {
-        $blockRenderer = new BlockRenderer($inlineRenderer = new InlineRenderer($this->options), new ListRenderer($inlineRenderer));
+        $blockRenderer = new BlockRenderer(new InlineRenderer($this->options));
         $blocks        = [];
 
         foreach ((new BlockSplitter())->split($this->clean($this->text)) as $block) {

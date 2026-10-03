@@ -26,12 +26,16 @@ final class Urls
     {
         $urls = [];
         $text = str_replace([self::START, self::END], '', $text);
-        $text = preg_replace_callback('~\bhttps?://(?:(?!&lt;|&gt;)[^\s<>"])+~i', function (array $match) use (&$urls): string {
-            [$url, $trailing] = $this->split($match[0]);
-            $urls[]           = $url;
+        $text = preg_replace_callback(
+            '~\bhttps?://(?:(?!&lt;|&gt;)[^\s<>"])+~i',
+            function (array $match) use (&$urls): string {
+                [$url, $trailing] = $this->split($match[0]);
+                $urls[]           = $url;
 
-            return self::START . (count($urls) - 1) . self::END . $trailing;
-        }, $text) ?? $text;
+                return self::START . (count($urls) - 1) . self::END . $trailing;
+            },
+            $text,
+        ) ?? $text;
 
         return [$text, $urls];
     }
@@ -41,11 +45,15 @@ final class Urls
      */
     public function restore(string $text, array $urls, bool $asLinks): string
     {
-        return preg_replace_callback('/' . self::START . '(\d+)' . self::END . '/', static function (array $match) use ($urls, $asLinks): string {
-            $url = $urls[(int) $match[1]] ?? '';
+        return preg_replace_callback(
+            '/' . self::START . '(\d+)' . self::END . '/',
+            static function (array $match) use ($urls, $asLinks): string {
+                $url = $urls[(int) $match[1]] ?? '';
 
-            return $asLinks ? '<a href="' . $url . '">' . $url . '</a>' : $url;
-        }, $text) ?? $text;
+                return $asLinks ? '<a href="' . $url . '">' . $url . '</a>' : $url;
+            },
+            $text,
+        ) ?? $text;
     }
 
     /**
