@@ -8,7 +8,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 - Text styles (`*bold*`, `-italic-`, `_underline_`, `~strikethrough~`), the line break and the bare URLs ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)).
 - The `Options` object and `Convert::toHtml()` ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
-- The quality tools of the other zairakai projects: Pint, PHPStan with the strict rules, Rector, PHP Insights at 100 %, markdownlint, a `Makefile` and Git hooks ([#14](https://github.com/Stanislas-Poisson/KMark/issues/14)).
+- The quality tools of the other zairakai projects: Pint, PHPStan with the strict rules, Rector, PHP Insights at 100 %, markdownlint, a `Makefile` and Git hooks ([#14](https://github.com/Stanislas-Poisson/KMark/issues/14)), now taken from php-dev-tools instead of a copy ([#16](https://github.com/Stanislas-Poisson/KMark/issues/16)).
 
 ### Changed
 
