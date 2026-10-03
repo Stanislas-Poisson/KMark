@@ -26,10 +26,12 @@ The same with an instance:
 
 ```php
 $html = (new Convert())
-    ->setText("# Title")
+    ->withText("# Title")
     ->convert()
     ->getText();
 ```
+
+A `Convert` object never changes: `withText()` and `convert()` return a new one.
 
 Output:
 
@@ -135,9 +137,12 @@ KMark never throws on a text. Whatever it does not understand stays in the text,
 ## Development
 
 ```sh
-composer install
-composer check   # PHPStan at the maximum level, then PHPUnit
+make install
+make hooks     # the Git hooks
+make quality   # Pint, PHPStan, Rector, PHP Insights and PHPUnit
 ```
+
+`make help` lists every command. See [CONTRIBUTING.md](CONTRIBUTING.md) for the details.
 
 ## Roadmap
 
