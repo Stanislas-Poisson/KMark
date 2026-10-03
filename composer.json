@@ -1,8 +1,42 @@
 {
+    "$schema": "https://getcomposer.org/schema.json",
     "name": "stanislas-poisson/kmark",
     "description": "A Markdown-like text to HTML converter that lets you set an id and CSS classes on every element.",
     "type": "library",
+    "keywords": [
+        "markdown",
+        "parser",
+        "html",
+        "converter",
+        "css",
+        "php"
+    ],
     "license": "MIT",
+    "homepage": "https://github.com/Stanislas-Poisson/KMark",
+    "authors": [
+        {
+            "name": "Stanislas Poisson",
+            "email": "stanislas.p@the-white-rabbits.fr",
+            "homepage": "https://github.com/Stanislas-Poisson",
+            "role": "Maintainer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Stanislas-Poisson/KMark/issues",
+        "source": "https://github.com/Stanislas-Poisson/KMark",
+        "docs": "https://github.com/Stanislas-Poisson/KMark#readme",
+        "security": "https://github.com/Stanislas-Poisson/KMark/security/policy"
+    },
+    "funding": [
+        {
+            "type": "patreon",
+            "url": "https://www.patreon.com/c/zairakai"
+        },
+        {
+            "type": "other",
+            "url": "https://www.twitch.tv/zairakai"
+        }
+    ],
     "require": {
         "php": ">=8.3"
     },
@@ -21,7 +55,30 @@
         }
     },
     "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
         "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "authors": [
+            {
+                "email": [
+                    "stanislas.p@the-white-rabbits.fr"
+                ],
+                "name": "Stanislas Poisson",
+                "notes": "Primary maintainer",
+                "social": {
+                    "github": "https://github.com/Stanislas-Poisson",
+                    "gitlab": "https://gitlab.com/zairakai",
+                    "linkedin": "https://www.linkedin.com/in/stanislasp/",
+                    "stanislas-poisson": "https://the-white-rabbits.fr",
+                    "the-white-rabbits": "https://the-white-rabbits.fr",
+                    "twitch": "https://twitch.tv/zairakai"
+                }
+            }
+        ]
     },
     "scripts": {
         "test": "phpunit",
