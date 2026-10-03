@@ -2,7 +2,7 @@
 
 A custom Markdown parser written in PHP. It extends the usual syntax so that an id and CSS classes can be attached directly to an element, for example `# Title {#myId .class1 .class2}`. It is made for the web: the output is HTML.
 
-> **Status: proof of concept.** KMark was written in 2013 and moved to PHP 7 in 2017. The converter was cleaned and tested ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)), but the text styles are still missing and there is no package and no configuration yet. See [Known limits](#known-limits) and [Roadmap](#roadmap).
+> **Status: proof of concept.** KMark was written in 2013 and moved to PHP 7 in 2017. The converter was cleaned and tested ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)) and the text styles were added ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)), but there is no package and no real configuration yet. See [Known limits](#known-limits) and [Roadmap](#roadmap).
 
 ## Requirements
 
@@ -51,10 +51,32 @@ The columns show the input and the output. Indentation inside lists and quotes u
 | Code | lines between two lines of `~~` | `<code>…</code>`, escaped, tabs as spaces |
 | Table | `\| A \| B`, a separator line, then rows | `<table><tr><td>…</td></tr>…</table>` |
 | Horizontal rule | six dashes or more, alone | `<hr>` |
+| Bold | `*foo*` | `<span class="b">foo</span>` |
+| Italic | `-foo-` | `<span class="i">foo</span>` |
+| Underline | `_foo_` | `<span class="u">foo</span>` |
+| Strikethrough | `~foo~` | `<span class="d">foo</span>` |
+| Line break | two spaces at the end of a line | `<br>` |
 | Link | `[Example]:(https://example.com "Title")` | `<a href="https://example.com" title="Title">Example</a>` |
+| Bare URL | `https://example.com` | `<a href="https://example.com">https://example.com</a>` |
 | Image | `![alt](https://example.com/a.png)` | `<img src="https://example.com/a.png" alt="alt">` |
 
 Lists can be nested and mixed: one more tab opens a list inside the current item, and the marker (`+` or `1.`) of each item gives the type of its list.
+
+### Styles
+
+A marker is written right before the first character and right after the last one of the styled text, with no space inside: `*foo bar*`, not `* foo bar *`. It never starts or ends inside a word, so `snake_case_name`, `well-known-fact` and `2013-08-12` stay as they are. A dash between two spaces is a dash: `a - b - c` stays as it is, and `a - -b- - c` gives `a - <span class="i">b</span> - c`.
+
+The markers can be combined by closing them in the reverse order: `_-*foo*-_` gives `<span class="u i b">foo</span>`. Markers that are not closed in the reverse order stay in the text.
+
+A style works in a paragraph, a heading, a list item, a quote and a table cell, and around a bare URL. It does not work inside a code block or in the text of a link.
+
+### Bare URLs
+
+The `http://` and `https://` URLs written in a text become links. A final `.`, `,`, `;`, `:`, `!`, `?`, `*`, `_`, `~`, `-` or a closing parenthesis that the URL did not open is left outside the link, and the style markers inside a URL are not read. To keep the URLs as text:
+
+```php
+$converter->setAutoLinks(false);
+```
 
 ### Id and classes
 
@@ -72,11 +94,15 @@ Only the first id is kept, and only letters, digits, `_` and `-` are accepted in
 
 The input is escaped: HTML written in the text is shown as text, so `<script>` is never executed. Only the links and images with a relative URL or one of the schemes `http`, `https`, `mailto`, `tel` and `ftp` are kept. For any other scheme (`javascript:`, `data:`…), the text of the link is written without the link.
 
+### Malformed input
+
+KMark never throws on a text. Whatever it does not understand stays in the text, escaped: a code block that is not closed is a paragraph, a "{…}" block that is not an id and classes stays as it is, a style marker that is not closed stays as it is, and a link with an unsafe URL is written as its text.
+
 ## Known limits
 
-- **Text styles are not available yet**: bold, italic, underline and strikethrough, and the line break (two trailing spaces), are left as plain text ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)).
+- **There is no escape character** to write a style marker that would otherwise be read as a style.
 - **An URL cannot contain a closing parenthesis**: the link stops at the first one.
-- **There is no configuration**: the escaping, the schemes and the CSS classes cannot be changed yet ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
+- **There is almost no configuration**: only the bare URLs can be switched off. The escaping, the schemes and the CSS classes of the styles cannot be changed yet ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
 - A table has no header cell: every cell is a `td`.
 
 ## Development
@@ -89,7 +115,7 @@ composer check   # PHPStan at the maximum level, then PHPUnit
 ## Roadmap
 
 1. Fix the known bugs and clean the application ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)): done.
-2. Add the missing features ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)).
+2. Add the missing features ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)): done.
 3. Turn KMark into a Composer package with a configuration, for example to switch the automatic links on or off ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
 
 ## License

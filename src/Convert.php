@@ -15,6 +15,8 @@ final class Convert
 {
     private string $text = '';
 
+    private bool $autoLinks = true;
+
     public function setText(string $text = ''): self
     {
         $this->text = trim($text);
@@ -27,9 +29,19 @@ final class Convert
         return $this->text;
     }
 
+    /**
+     * Turns the bare "http://" and "https://" URLs into links. It is on by default.
+     */
+    public function setAutoLinks(bool $autoLinks): self
+    {
+        $this->autoLinks = $autoLinks;
+
+        return $this;
+    }
+
     public function convert(): self
     {
-        $renderer = new BlockRenderer($inline = new InlineRenderer(), new ListRenderer($inline));
+        $renderer = new BlockRenderer($inline = new InlineRenderer($this->autoLinks), new ListRenderer($inline));
         $blocks = [];
 
         foreach ((new BlockSplitter())->split($this->clean($this->text)) as $block) {
