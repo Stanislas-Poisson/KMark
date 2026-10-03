@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping. KMark is a PHP library that turns a text into HTML. It is a proof of concept with no test and no build yet.
+Thank you for helping. KMark is a PHP library that turns a text into HTML. It is a proof of concept.
 
 ---
 
@@ -10,8 +10,8 @@ Thank you for helping. KMark is a PHP library that turns a text into HTML. It is
 | :--- | :--- | :--- |
 | **1. Issue** | Open or pick an issue | One branch and one pull request per issue. |
 | **2. Branch** | `git checkout -b feature/#TICKET-name develop` | Create a branch from `develop`. |
-| **3. Code** | *(your IDE)* | Keep the change small and follow the style of the file. |
-| **4. Check** | See below | There is no automatic check yet. |
+| **3. Code** | *(your IDE)* | Keep the change small, and write its test. |
+| **4. Check** | `composer check` | Run PHPStan at the maximum level, then PHPUnit. |
 | **5. Commit** | `git commit -m "type(scope): #TICKET subject"` | Use the [Conventional Commits][conventional-commits] format, in English, 72 characters at most. |
 | **6. Push** | `git push origin feature/#TICKET-name` | Push and open a pull request to `develop`. |
 
@@ -19,11 +19,16 @@ A pull request needs a review and is merged with a merge commit.
 
 ---
 
-## Check a change by hand
+## Checks
 
-Run the example of the README and compare the output with the table, and run `php -l KMark.php`.
+| Command | Tool | Description |
+| :--- | :--- | :--- |
+| `composer install` | Composer | Install the development tools. |
+| `composer stan` | PHPStan | Static analysis at the maximum level, without a baseline. |
+| `composer test` | PHPUnit | Run the tests. The coverage of `src/` must stay at 100 %. |
+| `composer check` | Both | The two commands above. |
 
-PHPUnit tests, static analysis and a CI check will come with the issues of the roadmap in the [README](README.md#roadmap).
+The `ci` check runs the same commands on PHP 8.3 and 8.4, and must pass before a change reaches `develop` or `main`.
 
 ---
 
