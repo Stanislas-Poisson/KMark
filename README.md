@@ -2,7 +2,7 @@
 
 A custom Markdown parser written in PHP. It extends the usual syntax so that an id and CSS classes can be attached directly to an element, for example `# Title {#myId .class1 .class2}`. It is made for the web: the output is HTML.
 
-> **Status: proof of concept.** KMark was written in 2013 and moved to PHP 7 in 2017. The converter was cleaned and tested ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)) and the text styles were added ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)), but it is not published as a package yet. See [Known limits](#known-limits) and [Roadmap](#roadmap).
+> **Status: stable, `1.0.0`.** KMark was written in 2013 and moved to PHP 7 in 2017. The converter was cleaned and tested ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)) and the text styles were added ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)), and it is published as a Composer package. See [Known limits](#known-limits) and [Roadmap](#roadmap).
 
 ## Requirements
 
@@ -10,7 +10,11 @@ PHP 8.3 or higher. There is no dependency.
 
 ## Usage
 
-KMark is not published on Packagist yet: there is no release. When it is, it will be installed with `composer require stanislas-poisson/kmark`. Until then, add the repository to your `composer.json`, or include the files yourself.
+Install it with Composer:
+
+```bash
+composer require stanislas-poisson/kmark
+```
 
 ```php
 <?php
@@ -148,7 +152,7 @@ make quality   # Pint, PHPStan, Rector, PHP Insights and PHPUnit
 
 1. Fix the known bugs and clean the application ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)): done.
 2. Add the missing features ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)): done.
-3. Turn KMark into a Composer package with a configuration ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)): the configuration is done, the release and the publication on Packagist are not.
+3. Turn KMark into a Composer package with a configuration ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)): done, released as `1.0.0`.
 
 ## License
 
