@@ -35,7 +35,7 @@ The Composer scripts are the source of truth, and the `Makefile` is a short way 
 | `make test` | PHPUnit | Run the tests. `make coverage` shows the coverage, which must stay at 100 % for `src/`. |
 | `make quality` | All | The whole gate, without the Markdown. `make quality-fix` fixes what can be fixed. |
 
-The rules come from [php-dev-tools](https://github.com/Stanislas-Poisson/php-dev-tools), which the files of this repository extend: `pint.json`, `phpstan.neon.dist`, `rector.php`, `phpinsights.php` and `.markdownlint.json` only hold what is specific to KMark. The package is read from its GitHub repository until it is on Packagist. No file is excluded to hide an error.
+The rules come from [php-dev-tools](https://github.com/Stanislas-Poisson/php-dev-tools), which the files of this repository extend: `pint.json`, `phpstan.neon.dist`, `rector.php`, `phpinsights.php` and `.markdownlint.json` only hold what is specific to KMark. No file is excluded to hide an error.
 
 The `ci` check runs the same commands on PHP 8.3 and 8.4, and must pass before a change reaches `develop` or `main`.
 
