@@ -24,7 +24,8 @@ final readonly class InlineRenderer
 
         // The links and the tags are left as they are: the text of a link is not styled, and
         // the HTML that is allowed to stay in the text is not read.
-        $segments = preg_split('/(<a\b.*?<\/a>|<[^>]*>)/s', $text, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$text];
+        $segments = preg_split('/(<a\b.*?<\/a>|<[^>]*>)/s', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $segments = false === $segments ? [$text] : $segments;
         $styles   = new TextStyles($this->options->styleClasses);
         $urls     = new Urls();
 
