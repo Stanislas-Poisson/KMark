@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace KMark;
 
 /**
- * Splits a text on its blank lines, except inside a fenced code block.
+ * Splits a text into blocks: on the blank lines, except inside a code block, and after a heading.
  *
  * @internal
  */
@@ -16,44 +16,64 @@ final class BlockSplitter
      */
     public function split(string $text): array
     {
-        $blocks = [];
-        $current = [];
-        $inCode = false;
+        $blockBuffer = new BlockBuffer();
+        $inCode      = false;
 
         foreach (explode("\n", $text) as $line) {
-            if (1 === preg_match('/^~{2,}\s*$/', $line)) {
-                if (!$inCode && [] !== $current) {
-                    $blocks[] = implode("\n", $current);
-                    $current = [];
-                }
-
-                $inCode = !$inCode;
-                $current[] = $line;
-
-                if (!$inCode) {
-                    $blocks[] = implode("\n", $current);
-                    $current = [];
-                }
-
-                continue;
-            }
-
-            if (!$inCode && '' === trim($line)) {
-                if ([] !== $current) {
-                    $blocks[] = implode("\n", $current);
-                    $current = [];
-                }
-
-                continue;
-            }
-
-            $current[] = $line;
+            $inCode = $this->read($blockBuffer, $line, $inCode);
         }
 
-        if ([] !== $current) {
-            $blocks[] = implode("\n", $current);
+        return $blockBuffer->finish();
+    }
+
+    private function fence(BlockBuffer $blockBuffer, string $line, bool $inCode): bool
+    {
+        if (! $inCode) {
+            $blockBuffer->flush();
         }
 
-        return $blocks;
+        $blockBuffer->add($line);
+
+        if ($inCode) {
+            $blockBuffer->flush();
+        }
+
+        return ! $inCode;
+    }
+
+    /**
+     * @return bool whether the next line is in a code block
+     */
+    private function read(BlockBuffer $blockBuffer, string $line, bool $inCode): bool
+    {
+        if (1 === preg_match('/^~{2,}\s*$/', $line)) {
+            return $this->fence($blockBuffer, $line, $inCode);
+        }
+
+        if (! $inCode) {
+            $this->readOutsideCode($blockBuffer, $line);
+        }
+        else {
+            $blockBuffer->add($line);
+        }
+
+        return $inCode;
+    }
+
+    private function readOutsideCode(BlockBuffer $blockBuffer, string $line): void
+    {
+        if ('' === trim($line)) {
+            $blockBuffer->flush();
+
+            return;
+        }
+
+        $startsBlock = $blockBuffer->isEmpty();
+        $blockBuffer->add($line);
+
+        // A heading is a block of its own, even when a text follows it right away.
+        if ($startsBlock && 1 === preg_match('/^#{1,6} /', $line)) {
+            $blockBuffer->flush();
+        }
     }
 }

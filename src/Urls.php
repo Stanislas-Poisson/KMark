@@ -12,9 +12,9 @@ namespace KMark;
  */
 final class Urls
 {
-    private const START = "\x01";
+    private const string END = "\x02";
 
-    private const END = "\x02";
+    private const string START = "\x01";
 
     /**
      * Replaces each URL with a token, without the punctuation and the style markers
@@ -26,12 +26,16 @@ final class Urls
     {
         $urls = [];
         $text = str_replace([self::START, self::END], '', $text);
-        $text = preg_replace_callback('~\bhttps?://(?:(?!&lt;|&gt;)[^\s<>"])+~i', function (array $match) use (&$urls): string {
-            [$url, $trailing] = $this->split($match[0]);
-            $urls[] = $url;
+        $text = preg_replace_callback(
+            '~\bhttps?://(?:(?!&lt;|&gt;)[^\s<>"])+~i',
+            function (array $match) use (&$urls): string {
+                [$url, $trailing] = $this->split($match[0]);
+                $urls[]           = $url;
 
-            return self::START . (count($urls) - 1) . self::END . $trailing;
-        }, $text) ?? $text;
+                return self::START . (count($urls) - 1) . self::END . $trailing;
+            },
+            $text,
+        ) ?? $text;
 
         return [$text, $urls];
     }
@@ -41,26 +45,15 @@ final class Urls
      */
     public function restore(string $text, array $urls, bool $asLinks): string
     {
-        return preg_replace_callback('/' . self::START . '(\d+)' . self::END . '/', static function (array $match) use ($urls, $asLinks): string {
-            $url = $urls[(int) $match[1]] ?? '';
+        return preg_replace_callback(
+            '/' . self::START . '(\d+)' . self::END . '/',
+            static function (array $match) use ($urls, $asLinks): string {
+                $url = $urls[(int) $match[1]] ?? '';
 
-            return $asLinks ? '<a href="' . $url . '">' . $url . '</a>' : $url;
-        }, $text) ?? $text;
-    }
-
-    /**
-     * @return array{string, string} the URL and what follows it
-     */
-    private function split(string $url): array
-    {
-        $trailing = '';
-
-        while (1 === preg_match('/[.,;:!?)*_~-]$/', $url) && !$this->endsTheUrl($url)) {
-            $trailing = substr($url, -1) . $trailing;
-            $url = substr($url, 0, -1);
-        }
-
-        return [$url, $trailing];
+                return $asLinks ? '<a href="' . $url . '">' . $url . '</a>' : $url;
+            },
+            $text,
+        ) ?? $text;
     }
 
     /**
@@ -74,5 +67,20 @@ final class Urls
         }
 
         return str_ends_with($url, ';') && 1 === preg_match('/&(?:amp|lt|gt);$/', $url);
+    }
+
+    /**
+     * @return array{string, string} the URL and what follows it
+     */
+    private function split(string $url): array
+    {
+        $trailing = '';
+
+        while (1 === preg_match('/[.,;:!?)*_~-]$/', $url) && ! $this->endsTheUrl($url)) {
+            $trailing = substr($url, -1) . $trailing;
+            $url      = substr($url, 0, -1);
+        }
+
+        return [$url, $trailing];
     }
 }
