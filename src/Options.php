@@ -16,7 +16,7 @@ final readonly class Options
     /**
      * The CSS class of each style, by marker.
      */
-    public const DEFAULT_STYLE_CLASSES = ['*' => 'b', '-' => 'i', '_' => 'u', '~' => 'd'];
+    public const array DEFAULT_STYLE_CLASSES = ['*' => 'b', '-' => 'i', '_' => 'u', '~' => 'd'];
 
     /**
      * @param bool                  $autoLinks          turn the bare "http://" and "https://" URLs into links
@@ -45,9 +45,9 @@ final readonly class Options
             }
         }
 
-        foreach ($allowedSchemes as $scheme) {
-            if (1 !== preg_match('/^[a-z][a-z0-9+.\-]*$/', $scheme)) {
-                throw new InvalidArgumentException(sprintf('"%s" is not a valid scheme: use lowercase letters, digits, "+", "." and "-".', $scheme));
+        foreach ($allowedSchemes as $allowedScheme) {
+            if (1 !== preg_match('/^[a-z][a-z0-9+.\-]*$/', $allowedScheme)) {
+                throw new InvalidArgumentException(sprintf('"%s" is not a valid scheme: use lowercase letters, digits, "+", "." and "-".', $allowedScheme));
             }
         }
     }

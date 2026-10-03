@@ -26,13 +26,14 @@ final readonly class InlineRenderer
         // the HTML that is allowed to stay in the text is not read.
         $segments = preg_split('/(<a\b.*?<\/a>|<[^>]*>)/s', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
         $segments = false === $segments ? [$text] : $segments;
-        $styles   = new TextStyles($this->options->styleClasses);
-        $urls     = new Urls();
+
+        $textStyles   = new TextStyles($this->options->styleClasses);
+        $urls         = new Urls();
 
         foreach ($segments as $index => $segment) {
             if (0 === $index % 2) {
                 [$segment, $found] = $urls->protect($segment);
-                $segments[$index]  = $urls->restore($styles->render($segment), $found, $this->options->autoLinks);
+                $segments[$index]  = $urls->restore($textStyles->render($segment), $found, $this->options->autoLinks);
             }
         }
 

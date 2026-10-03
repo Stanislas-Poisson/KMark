@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 
 // The sets of zairakai/laravel-dev-tools for PHP 8.3, without the Laravel ones.
 return RectorConfig::configure()
@@ -20,5 +19,4 @@ return RectorConfig::configure()
         instanceOf: true,
         earlyReturn: true,
     )
-    ->withSkip([AddOverrideAttributeToOverriddenMethodsRector::class])
     ->withParallel();

@@ -12,9 +12,9 @@ namespace KMark;
  */
 final class Urls
 {
-    private const END = "\x02";
+    private const string END = "\x02";
 
-    private const START = "\x01";
+    private const string START = "\x01";
 
     /**
      * Replaces each URL with a token, without the punctuation and the style markers

@@ -27,11 +27,11 @@ final class Convert
 
     public function convert(): self
     {
-        $renderer = new BlockRenderer($inline = new InlineRenderer($this->options), new ListRenderer($inline));
-        $blocks   = [];
+        $blockRenderer = new BlockRenderer($inlineRenderer = new InlineRenderer($this->options), new ListRenderer($inlineRenderer));
+        $blocks        = [];
 
         foreach ((new BlockSplitter())->split($this->clean($this->text)) as $block) {
-            $blocks[] = $renderer->render($block);
+            $blocks[] = $blockRenderer->render($block);
         }
 
         $this->text = implode("\n\n", $blocks);

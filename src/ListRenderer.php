@@ -12,7 +12,7 @@ namespace KMark;
  */
 final readonly class ListRenderer
 {
-    public function __construct(private InlineRenderer $inline) {}
+    public function __construct(private InlineRenderer $inlineRenderer) {}
 
     /**
      * @param list<string> $lines
@@ -45,7 +45,7 @@ final readonly class ListRenderer
             }
 
             [$text, $attributes] = Attributes::extract($text);
-            $html .= '<li' . $attributes->render() . '>' . $this->inline->render($text);
+            $html .= '<li' . $attributes->render() . '>' . $this->inlineRenderer->render($text);
         }
 
         while ([] !== $open) {

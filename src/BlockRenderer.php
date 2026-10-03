@@ -12,11 +12,11 @@ namespace KMark;
  */
 final readonly class BlockRenderer
 {
-    private const FENCE = '/^~{2,}\s*$/';
+    private const string FENCE = '/^~{2,}\s*$/';
 
     public function __construct(
-        private InlineRenderer $inline,
-        private ListRenderer $lists,
+        private InlineRenderer $inlineRenderer,
+        private ListRenderer $listRenderer,
     ) {}
 
     public function render(string $block): string
@@ -31,7 +31,7 @@ final readonly class BlockRenderer
         }
 
         if (1 === preg_match('/^(\+|\d+\.)\t/', $lines[0])) {
-            return $this->lists->render($lines);
+            return $this->listRenderer->render($lines);
         }
 
         if (1 === preg_match('/^>\t/', $lines[0])) {
@@ -52,7 +52,7 @@ final readonly class BlockRenderer
 
         [$text, $attributes] = Attributes::extract($block);
 
-        return '<p' . $attributes->render() . '>' . $this->inline->render($text) . '</p>';
+        return '<p' . $attributes->render() . '>' . $this->inlineRenderer->render($text) . '</p>';
     }
 
     /**
@@ -73,7 +73,7 @@ final readonly class BlockRenderer
     {
         [$text, $attributes] = Attributes::extract($text);
 
-        return '<h' . $level . $attributes->render() . '>' . $this->inline->render(trim($text)) . '</h' . $level . '>';
+        return '<h' . $level . $attributes->render() . '>' . $this->inlineRenderer->render(trim($text)) . '</h' . $level . '>';
     }
 
     /**
@@ -88,7 +88,7 @@ final readonly class BlockRenderer
             $line                    = 1 === preg_match('/^>\t(.*)$/', $line, $quote) ? $quote[1] : $line;
             [$line, $lineAttributes] = Attributes::extract($line);
             $attributes              = $attributes->merge($lineAttributes);
-            $content[]               = $this->inline->render($line);
+            $content[]               = $this->inlineRenderer->render($line);
         }
 
         return '<blockquote' . $attributes->render() . '>' . implode("\n", $content) . '</blockquote>';
@@ -110,7 +110,7 @@ final readonly class BlockRenderer
             $html .= '<tr>';
 
             foreach ($cells[1] as $cell) {
-                $html .= '<td>' . $this->inline->render(trim($cell)) . '</td>';
+                $html .= '<td>' . $this->inlineRenderer->render(trim($cell)) . '</td>';
             }
 
             $html .= '</tr>';

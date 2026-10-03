@@ -31,9 +31,9 @@ final class AttributesTest extends TestCase
 
     public function test_merge_keeps_the_first_id_and_gathers_the_classes(): void
     {
-        $merged = (new Attributes('a', ['x']))->merge(new Attributes('b', ['y']));
+        $attributes = (new Attributes('a', ['x']))->merge(new Attributes('b', ['y']));
 
-        self::assertSame(' id="a" class="x y"', $merged->render());
+        self::assertSame(' id="a" class="x y"', $attributes->render());
         self::assertSame(' id="b"', (new Attributes())->merge(new Attributes('b'))->render());
     }
 }
