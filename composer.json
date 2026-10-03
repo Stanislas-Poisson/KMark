@@ -1,0 +1,34 @@
+{
+    "name": "stanislas-poisson/kmark",
+    "description": "A Markdown-like text to HTML converter that lets you set an id and CSS classes on every element.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "KMark\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "KMark\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=512M",
+        "check": [
+            "@stan",
+            "@test"
+        ]
+    }
+}
