@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KMark\Tests;
 
 use KMark\Convert;
+use KMark\Options;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -199,7 +200,7 @@ final class ConvertTest extends TestCase
 
     public function testBareUrlsCanBeLeftAlone(): void
     {
-        $html = (new Convert())->setAutoLinks(false)->setText('See https://example.com and *https://example.com/~a*')->convert()->getText();
+        $html = Convert::toHtml('See https://example.com and *https://example.com/~a*', new Options(autoLinks: false));
 
         self::assertSame('<p>See https://example.com and <span class="b">https://example.com/~a</span></p>', $html);
     }
@@ -208,8 +209,61 @@ final class ConvertTest extends TestCase
     {
         self::assertSame(
             '<p><a href="https://example.com">https://example.com</a></p>',
-            (new Convert())->setText('https://example.com')->convert()->getText(),
+            Convert::toHtml('https://example.com'),
         );
+    }
+
+    public function testConvertsInOneCallOrWithAnInstance(): void
+    {
+        $options = new Options(styleClasses: ['*' => 'strong']);
+
+        self::assertSame('<p><span class="strong">a</span></p>', Convert::toHtml('*a*', $options));
+        self::assertSame('<p><span class="strong">a</span></p>', (new Convert($options))->setText('*a*')->convert()->getText());
+    }
+
+    public function testStyleClassesCanBeChangedOrLeftOut(): void
+    {
+        $options = new Options(styleClasses: ['*' => 'strong', '-' => 'em']);
+
+        self::assertSame(
+            '<p><span class="strong">a</span> <span class="em">b</span> _c_ ~d~ <span class="em strong">e</span></p>',
+            Convert::toHtml('*a* -b- _c_ ~d~ -*e*-', $options),
+        );
+    }
+
+    public function testStylesCanBeSwitchedOffButTheLineBreakStays(): void
+    {
+        self::assertSame("<p>*a* -b-<br>\nc</p>", Convert::toHtml("*a* -b-  \nc", new Options(styleClasses: [])));
+    }
+
+    public function testAllowedSchemesCanBeChanged(): void
+    {
+        $options = new Options(allowedSchemes: ['https', 'gopher']);
+
+        self::assertSame(
+            '<p>a <a href="https://x.fr">b</a> <a href="gopher://x.fr">c</a> d e</p>',
+            Convert::toHtml('a [b]:(https://x.fr) [c]:(gopher://x.fr) [d]:(http://x.fr) [e]:(mailto:a@b.fr)', $options),
+        );
+        self::assertSame('<p><a href="/page">x</a></p>', Convert::toHtml('[x]:(/page)', new Options(allowedSchemes: [])));
+    }
+
+    public function testRawHtmlIsEscapedByDefault(): void
+    {
+        self::assertSame('<p>&lt;b onclick="x"&gt;y&lt;/b&gt;</p>', Convert::toHtml('<b onclick="x">y</b>'));
+    }
+
+    public function testRawHtmlCanBeKeptOnATextThatIsTrusted(): void
+    {
+        $options = new Options(unsafeAllowRawHtml: true);
+
+        self::assertSame('<p><b>x</b> <span class="b">y</span></p>', Convert::toHtml('<b>x</b> *y*', $options));
+        self::assertSame('<p><img src="https://x.fr/a.png" alt="-a-"> and <a href="https://x.fr">https://x.fr</a></p>', Convert::toHtml('<img src="https://x.fr/a.png" alt="-a-"> and https://x.fr', $options));
+        self::assertSame('<p><a href="https://x.fr/~a~">~b~</a></p>', Convert::toHtml('<a href="https://x.fr/~a~">~b~</a>', $options));
+    }
+
+    public function testACodeBlockIsAlwaysEscaped(): void
+    {
+        self::assertSame('<code>&lt;b&gt;</code>', Convert::toHtml("~~\n<b>\n~~", new Options(unsafeAllowRawHtml: true)));
     }
 
     public function testSetTextTrimsTheText(): void

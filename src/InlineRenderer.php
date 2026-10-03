@@ -11,27 +11,29 @@ namespace KMark;
  */
 final readonly class InlineRenderer
 {
-    private const ALLOWED_SCHEMES = ['http', 'https', 'mailto', 'tel', 'ftp'];
-
-    public function __construct(private bool $autoLinks = true)
+    public function __construct(private Options $options = new Options())
     {
     }
 
     public function render(string $text): string
     {
-        $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_SUBSTITUTE);
+        if (!$this->options->unsafeAllowRawHtml) {
+            $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_SUBSTITUTE);
+        }
+
         $text = preg_replace_callback('/\[([^\]]*)\]:\(([^)]*)\)/', $this->link(...), $text) ?? $text;
         $text = preg_replace_callback('/!\[([^\]]*)\]\(([^)]*)\)/', $this->image(...), $text) ?? $text;
 
-        // The links and the images that were just written are left as they are.
-        $segments = preg_split('/(<a\b.*?<\/a>|<img\b[^>]*>)/s', $text, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$text];
-        $styles = new TextStyles();
+        // The links and the tags are left as they are: the text of a link is not styled, and
+        // the HTML that is allowed to stay in the text is not read.
+        $segments = preg_split('/(<a\b.*?<\/a>|<[^>]*>)/s', $text, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$text];
+        $styles = new TextStyles($this->options->styleClasses);
         $urls = new Urls();
 
         foreach ($segments as $index => $segment) {
             if (0 === $index % 2) {
                 [$segment, $found] = $urls->protect($segment);
-                $segments[$index] = $urls->restore($styles->render($segment), $found, $this->autoLinks);
+                $segments[$index] = $urls->restore($styles->render($segment), $found, $this->options->autoLinks);
             }
         }
 
@@ -93,7 +95,7 @@ final readonly class InlineRenderer
             return true;
         }
 
-        return in_array(strtolower($scheme[1]), self::ALLOWED_SCHEMES, true);
+        return in_array(strtolower($scheme[1]), $this->options->allowedSchemes, true);
     }
 
     /**
