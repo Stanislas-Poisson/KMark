@@ -101,28 +101,31 @@ final class ConvertTest extends TestCase
         yield 'code right after a text' => ["Text\n~~\nx\n~~", "<p>Text</p>\n\n<code>x</code>"];
         yield 'unclosed code' => ["~~\ncode", "<p>~~\ncode</p>"];
         yield 'dashes inside a text' => ['a ------ b', '<p>a ------ b</p>'];
-        yield 'bold' => ['* foo *', '<p><span class="b">foo</span></p>'];
-        yield 'italic' => ['- foo -', '<p><span class="i">foo</span></p>'];
-        yield 'underline' => ['_ foo _', '<p><span class="u">foo</span></p>'];
-        yield 'strikethrough' => ['/ foo /', '<p><span class="d">foo</span></p>'];
-        yield 'combined styles' => ['_-* foo *-_', '<p><span class="u i b">foo</span></p>'];
-        yield 'repeated marker' => ['** foo **', '<p><span class="b">foo</span></p>'];
+        yield 'bold' => ['*foo*', '<p><span class="b">foo</span></p>'];
+        yield 'italic' => ['-foo-', '<p><span class="i">foo</span></p>'];
+        yield 'underline' => ['_foo_', '<p><span class="u">foo</span></p>'];
+        yield 'strikethrough' => ['~foo~', '<p><span class="d">foo</span></p>'];
+        yield 'several words' => ['*foo bar*', '<p><span class="b">foo bar</span></p>'];
+        yield 'combined styles' => ['_-*foo*-_', '<p><span class="u i b">foo</span></p>'];
+        yield 'repeated marker' => ['**foo**', '<p><span class="b">foo</span></p>'];
         yield 'styles inside a text' => [
-            'a * b c * d and / e / f',
+            'a *b c* d and ~e~ f',
             '<p>a <span class="b">b c</span> d and <span class="d">e</span> f</p>',
         ];
         yield 'styles inside a heading, a list, a table and a quote' => [
-            "# * T *\n\n+\t* L *\n\n| * C *\n\n>\t* Q *",
+            "# *T*\n\n+\t*L*\n\n| *C*\n\n>\t*Q*",
             '<h1><span class="b">T</span></h1>' . "\n\n" . '<ul><li><span class="b">L</span></li></ul>' . "\n\n"
                 . '<table><tr><td><span class="b">C</span></td></tr></table>' . "\n\n"
                 . '<blockquote><span class="b">Q</span></blockquote>',
         ];
-        yield 'markers without a space inside' => ['*foo* and _bar_', '<p>*foo* and _bar_</p>'];
-        yield 'closing markers not in the reverse order' => ['_* foo _*', '<p>_* foo _*</p>'];
-        yield 'a marker alone' => ['a - b', '<p>a - b</p>'];
-        yield 'two dashes around words are an italic' => ['a - b - c', '<p>a <span class="i">b</span> c</p>'];
-        yield 'styles are not applied in a code block' => ["~~\n* foo *\n~~", '<code>* foo *</code>'];
-        yield 'styles are not applied in a link text' => ['[* a *]:(b)', '<p><a href="b">* a *</a></p>'];
+        yield 'a dash between two words stays' => ['a - b - c', '<p>a - b - c</p>'];
+        yield 'an italic between two dashes' => ['a - -b- - c', '<p>a - <span class="i">b</span> - c</p>'];
+        yield 'markers with a space inside stay' => ['* foo * and _ bar _', '<p>* foo * and _ bar _</p>'];
+        yield 'closing markers not in the reverse order' => ['_*foo_*', '<p>_*foo_*</p>'];
+        yield 'a marker with no closing one' => ['a *b', '<p>a *b</p>'];
+        yield 'markers inside a word' => ['snake_case_name and well-known-fact and 2013-08-12', '<p>snake_case_name and well-known-fact and 2013-08-12</p>'];
+        yield 'styles are not applied in a code block' => ["~~\n*foo*\n~~", '<code>*foo*</code>'];
+        yield 'styles are not applied in a link text' => ['[*a*]:(b)', '<p><a href="b">*a*</a></p>'];
         yield 'line break' => ["L1  \nL2", "<p>L1<br>\nL2</p>"];
         yield 'one trailing space is not a line break' => ["L1 \nL2", "<p>L1 \nL2</p>"];
         yield 'bare URL' => [
@@ -142,8 +145,12 @@ final class ConvertTest extends TestCase
             '<p>&lt;<a href="https://example.com">https://example.com</a>&gt;</p>',
         ];
         yield 'bare URL in a style' => [
-            '* https://example.com *',
+            '*https://example.com*',
             '<p><span class="b"><a href="https://example.com">https://example.com</a></span></p>',
+        ];
+        yield 'markers inside a bare URL' => [
+            'https://example.com/~user/-a-/_b_',
+            '<p><a href="https://example.com/~user/-a-/_b">https://example.com/~user/-a-/_b</a>_</p>',
         ];
         yield 'bare URL as the text and the target of a link' => [
             '[https://example.com]:(https://example.com)',
@@ -154,6 +161,7 @@ final class ConvertTest extends TestCase
             '<p><img src="https://example.com/a.png" alt="https://example.com"></p>',
         ];
         yield 'URL with another scheme' => ['ftp://example.com', '<p>ftp://example.com</p>'];
+        yield 'control characters of the input are dropped' => ["a\x01b\x02c https://example.com", '<p>abc <a href="https://example.com">https://example.com</a></p>'];
         yield 'windows line breaks' => ["A\r\n\r\nB", "<p>A</p>\n\n<p>B</p>"];
     }
 
@@ -190,9 +198,9 @@ final class ConvertTest extends TestCase
 
     public function testBareUrlsCanBeLeftAlone(): void
     {
-        $html = (new Convert())->setAutoLinks(false)->setText('See https://example.com')->convert()->getText();
+        $html = (new Convert())->setAutoLinks(false)->setText('See https://example.com and *https://example.com/~a*')->convert()->getText();
 
-        self::assertSame('<p>See https://example.com</p>', $html);
+        self::assertSame('<p>See https://example.com and <span class="b">https://example.com/~a</span></p>', $html);
     }
 
     public function testBareUrlsAreLinksByDefault(): void

@@ -5,21 +5,23 @@ declare(strict_types=1);
 namespace KMark;
 
 /**
- * Converts the styles of a text that is already escaped: "* bold *", "- italic -",
- * "_ underline _" and "/ strikethrough /", and the line break (two spaces at the end of a line).
+ * Converts the styles of a text that is already escaped: "*bold*", "-italic-",
+ * "_underline_" and "~strikethrough~", and the line break (two spaces at the end of a line).
  *
- * The markers are put around the words with a space inside, and they can be combined
- * by closing them in the reverse order: "_-* text *-_" gives a span with the classes "u i b".
+ * A marker is written right before the first character and right after the last one of
+ * the styled text, with no space inside, and it never starts or ends inside a word. The
+ * markers can be combined by closing them in the reverse order: "_-*text*-_" gives a span
+ * with the classes "u i b".
  *
  * @internal
  */
 final class TextStyles
 {
-    private const CLASSES = ['*' => 'b', '_' => 'u', '-' => 'i', '/' => 'd'];
+    private const CLASSES = ['*' => 'b', '_' => 'u', '-' => 'i', '~' => 'd'];
 
     public function render(string $text): string
     {
-        $text = preg_replace_callback('/(?<!\w)([*_\-\/]+) (\S(?:[^\n]*?\S)?) ([*_\-\/]+)(?!\w)/', $this->style(...), $text) ?? $text;
+        $text = preg_replace_callback('/(?<!\w)([*_\-~]+)(\S(?:[^\n]*?\S)?)([*_\-~]+)(?!\w)/', $this->style(...), $text) ?? $text;
 
         return preg_replace('/ {2,}\n/', "<br>\n", $text) ?? $text;
     }

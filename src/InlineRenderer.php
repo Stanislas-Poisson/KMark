@@ -26,12 +26,12 @@ final readonly class InlineRenderer
         // The links and the images that were just written are left as they are.
         $segments = preg_split('/(<a\b.*?<\/a>|<img\b[^>]*>)/s', $text, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$text];
         $styles = new TextStyles();
-        $links = new AutoLinker();
+        $urls = new Urls();
 
         foreach ($segments as $index => $segment) {
             if (0 === $index % 2) {
-                $segment = $styles->render($segment);
-                $segments[$index] = $this->autoLinks ? $links->render($segment) : $segment;
+                [$segment, $found] = $urls->protect($segment);
+                $segments[$index] = $urls->restore($styles->render($segment), $found, $this->autoLinks);
             }
         }
 

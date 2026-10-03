@@ -51,10 +51,10 @@ The columns show the input and the output. Indentation inside lists and quotes u
 | Code | lines between two lines of `~~` | `<code>…</code>`, escaped, tabs as spaces |
 | Table | `\| A \| B`, a separator line, then rows | `<table><tr><td>…</td></tr>…</table>` |
 | Horizontal rule | six dashes or more, alone | `<hr>` |
-| Bold | `* foo *` | `<span class="b">foo</span>` |
-| Italic | `- foo -` | `<span class="i">foo</span>` |
-| Underline | `_ foo _` | `<span class="u">foo</span>` |
-| Strikethrough | `/ foo /` | `<span class="d">foo</span>` |
+| Bold | `*foo*` | `<span class="b">foo</span>` |
+| Italic | `-foo-` | `<span class="i">foo</span>` |
+| Underline | `_foo_` | `<span class="u">foo</span>` |
+| Strikethrough | `~foo~` | `<span class="d">foo</span>` |
 | Line break | two spaces at the end of a line | `<br>` |
 | Link | `[Example]:(https://example.com "Title")` | `<a href="https://example.com" title="Title">Example</a>` |
 | Bare URL | `https://example.com` | `<a href="https://example.com">https://example.com</a>` |
@@ -64,13 +64,15 @@ Lists can be nested and mixed: one more tab opens a list inside the current item
 
 ### Styles
 
-The markers are written around the words, with a space inside: `* foo *`, not `*foo*`. They can be combined by closing them in the reverse order: `_-* foo *-_` gives `<span class="u i b">foo</span>`. Markers that are not closed in the reverse order, or that have no space inside, stay in the text.
+A marker is written right before the first character and right after the last one of the styled text, with no space inside: `*foo bar*`, not `* foo bar *`. It never starts or ends inside a word, so `snake_case_name`, `well-known-fact` and `2013-08-12` stay as they are. A dash between two spaces is a dash: `a - b - c` stays as it is, and `a - -b- - c` gives `a - <span class="i">b</span> - c`.
 
-A style works in a paragraph, a heading, a list item, a quote and a table cell. It does not work inside a code block or in the text of a link.
+The markers can be combined by closing them in the reverse order: `_-*foo*-_` gives `<span class="u i b">foo</span>`. Markers that are not closed in the reverse order stay in the text.
+
+A style works in a paragraph, a heading, a list item, a quote and a table cell, and around a bare URL. It does not work inside a code block or in the text of a link.
 
 ### Bare URLs
 
-The `http://` and `https://` URLs written in a text become links. A final `.`, `,`, `;`, `:`, `!`, `?` or a closing parenthesis that the URL did not open is left outside the link. To keep the URLs as text:
+The `http://` and `https://` URLs written in a text become links. A final `.`, `,`, `;`, `:`, `!`, `?`, `*`, `_`, `~`, `-` or a closing parenthesis that the URL did not open is left outside the link, and the style markers inside a URL are not read. To keep the URLs as text:
 
 ```php
 $converter->setAutoLinks(false);
@@ -94,11 +96,11 @@ The input is escaped: HTML written in the text is shown as text, so `<script>` i
 
 ### Malformed input
 
-KMark never throws on a text. Whatever it does not understand stays in the text, escaped: a code block that is not closed is a paragraph, a "{…}" block that is not an id and classes stays as it is, a style marker that is not closed or has no space inside stays as it is, and a link with an unsafe URL is written as its text.
+KMark never throws on a text. Whatever it does not understand stays in the text, escaped: a code block that is not closed is a paragraph, a "{…}" block that is not an id and classes stays as it is, a style marker that is not closed stays as it is, and a link with an unsafe URL is written as its text.
 
 ## Known limits
 
-- **A dash between two words is an italic**: `a - b - c` gives `a <span class="i">b</span> c`, because `- b -` is the italic syntax. There is no escape character yet.
+- **There is no escape character** to write a style marker that would otherwise be read as a style.
 - **An URL cannot contain a closing parenthesis**: the link stops at the first one.
 - **There is almost no configuration**: only the bare URLs can be switched off. The escaping, the schemes and the CSS classes of the styles cannot be changed yet ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)).
 - A table has no header cell: every cell is a `td`.
