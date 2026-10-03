@@ -15,13 +15,21 @@ namespace KMark;
  *
  * @internal
  */
-final class TextStyles
+final readonly class TextStyles
 {
-    private const CLASSES = ['*' => 'b', '_' => 'u', '-' => 'i', '~' => 'd'];
+    /**
+     * @param array<string, string> $classes the CSS class of each style marker
+     */
+    public function __construct(private array $classes)
+    {
+    }
 
     public function render(string $text): string
     {
-        $text = preg_replace_callback('/(?<!\w)([*_\-~]+)(\S(?:[^\n]*?\S)??)([*_\-~]+)(?!\w)/', $this->style(...), $text) ?? $text;
+        if ([] !== $this->classes) {
+            $markers = '[' . preg_quote(implode('', array_keys($this->classes)), '/') . ']+';
+            $text = preg_replace_callback('/(?<!\w)(' . $markers . ')(\S(?:[^\n]*?\S)??)(' . $markers . ')(?!\w)/', $this->style(...), $text) ?? $text;
+        }
 
         return preg_replace('/ {2,}\n/', "<br>\n", $text) ?? $text;
     }
@@ -38,7 +46,7 @@ final class TextStyles
         $classes = [];
 
         foreach (str_split($match[1]) as $marker) {
-            $classes[self::CLASSES[$marker]] = true;
+            $classes[$this->classes[$marker]] = true;
         }
 
         return '<span class="' . implode(' ', array_keys($classes)) . '">' . $match[2] . '</span>';
