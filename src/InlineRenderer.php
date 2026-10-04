@@ -11,16 +11,33 @@ namespace KMark;
  */
 final readonly class InlineRenderer
 {
+    /**
+     * A backslash and a character that can be escaped: a marker, a bracket, a brace, "|", "!", "#", "+" or ">"
+     * (already written "&gt;" at this point).
+     */
+    private const string ESCAPE = '/\\\\(&gt;|[\\\\*\-_~\[\](){}|!#+>])/';
+
+    private const string ESCAPE_END = "\x04";
+
+    private const string ESCAPE_START = "\x03";
+
     public function __construct(private Options $options = new Options()) {}
 
     public function render(string $text): string
     {
+        $text = str_replace([self::ESCAPE_START, self::ESCAPE_END], '', $text);
+
         if (! $this->options->unsafeAllowRawHtml) {
             $text = htmlspecialchars($text, ENT_NOQUOTES | ENT_SUBSTITUTE);
         }
 
-        $text = preg_replace_callback('/\[([^\]]*)\]:\(([^)]*)\)/', $this->link(...), $text)  ?? $text;
-        $text = preg_replace_callback('/!\[([^\]]*)\]\(([^)]*)\)/', $this->image(...), $text) ?? $text;
+        // A backslash before a marker writes the marker as it is. The characters are put aside, so that
+        // nothing reads them, and written back at the end.
+        $text = preg_replace_callback(self::ESCAPE, $this->protectEscape(...), $text) ?? $text;
+
+        // The URL of a link or of an image can hold one level of parentheses.
+        $text = preg_replace_callback('/\[([^\]]*)\]:\(((?:[^()]|\([^()]*\))*)\)/', $this->link(...), $text)  ?? $text;
+        $text = preg_replace_callback('/!\[([^\]]*)\]\(((?:[^()]|\([^()]*\))*)\)/', $this->image(...), $text) ?? $text;
 
         // The links and the tags are left as they are: the text of a link is not styled, and
         // the HTML that is allowed to stay in the text is not read.
@@ -37,7 +54,7 @@ final readonly class InlineRenderer
             }
         }
 
-        return implode('', $segments);
+        return $this->restoreEscapes(implode('', $segments));
     }
 
     /**
@@ -100,10 +117,27 @@ final readonly class InlineRenderer
     }
 
     /**
+     * @param array<int|string, string> $match
+     */
+    private function protectEscape(array $match): string
+    {
+        return self::ESCAPE_START . ord('&gt;' === $match[1] ? '>' : $match[1]) . self::ESCAPE_END;
+    }
+
+    /**
      * The text is already escaped, only the double quote can end an attribute.
      */
     private function quote(string $value): string
     {
         return str_replace('"', '&quot;', $value);
+    }
+
+    private function restoreEscapes(string $text): string
+    {
+        return preg_replace_callback(
+            '/' . self::ESCAPE_START . '(\d+)' . self::ESCAPE_END . '/',
+            static fn (array $match): string => htmlspecialchars(chr((int) $match[1]), ENT_NOQUOTES),
+            $text,
+        ) ?? $text;
     }
 }

@@ -64,10 +64,80 @@ final class ConvertTest extends TestCase
 
         yield 'quote' => [">\tLine 1\n>\tLine 2", "<blockquote>Line 1\nLine 2</blockquote>"];
 
-        yield 'table' => [
+        yield 'table with a header' => [
             "| A | B\n| --------- | ---------\n| 1 | 2",
+            '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>',
+        ];
+
+        yield 'table without a line of dashes' => [
+            "| A | B\n| 1 | 2",
             '<table><tr><td>A</td><td>B</td></tr><tr><td>1</td><td>2</td></tr></table>',
         ];
+
+        yield 'table with a line of dashes first' => [
+            "|---|---\n| 1 | 2",
+            '<table><tr><td>1</td><td>2</td></tr></table>',
+        ];
+
+        yield 'table with several header lines' => [
+            "| A | B\n| C | D\n|---|---\n| 1 | 2",
+            '<table><thead><tr><th>A</th><th>B</th></tr><tr><th>C</th><th>D</th></tr></thead>'
+            . '<tbody><tr><td>1</td><td>2</td></tr></tbody></table>',
+        ];
+
+        yield 'table with aligned columns' => [
+            "| A | B | C | D\n|:---|---:|:---:|---\n| 1 | 2 | 3 | 4",
+            '<table><thead><tr><th style="text-align: left">A</th><th style="text-align: right">B</th>'
+            . '<th style="text-align: center">C</th><th>D</th></tr></thead><tbody><tr>'
+            . '<td style="text-align: left">1</td><td style="text-align: right">2</td>'
+            . '<td style="text-align: center">3</td><td>4</td></tr></tbody></table>',
+        ];
+
+        yield 'table with an escaped bar and a style in a cell' => [
+            "| a \\| b | *c*\n|---|---\n| 1 | 2",
+            '<table><thead><tr><th>a | b</th><th><span class="b">c</span></th></tr></thead>'
+            . '<tbody><tr><td>1</td><td>2</td></tr></tbody></table>',
+        ];
+
+        yield 'link with parentheses in the URL' => [
+            '[x]:(https://e.com/a_(b))',
+            '<p><a href="https://e.com/a_(b)">x</a></p>',
+        ];
+
+        yield 'link with parentheses, a title and a class' => [
+            '[x]:(/a(b) "t" {.c}) end (y)',
+            '<p><a href="/a(b)" title="t" class="c">x</a> end (y)</p>',
+        ];
+
+        yield 'image with parentheses in the URL' => ['![i](a_(b).png)', '<p><img src="a_(b).png" alt="i"></p>'];
+
+        yield 'escaped style markers' => [
+            '\\*a\\* \\-b\\- \\_c\\_ \\~d\\~ *e*',
+            '<p>*a* -b- _c_ ~d~ <span class="b">e</span></p>',
+        ];
+
+        yield 'escaped backslash' => ['a \\\\ b', '<p>a \\ b</p>'];
+
+        yield 'escaped block markers' => [
+            "\\# not a heading\n\n\\> not a quote\n\n\\+ not a list",
+            "<p># not a heading</p>\n\n<p>&gt; not a quote</p>\n\n<p>+ not a list</p>",
+        ];
+
+        yield 'escaped link and image' => [
+            '\\[x]:(a) \\![i](b)',
+            '<p>[x]:(a) ![i](b)</p>',
+        ];
+
+        yield 'escaped braces keep the text' => ['# T \\{#id}', '<h1>T {#id}</h1>'];
+
+        yield 'escaped parentheses in a URL' => [
+            '[x]:(a\\)b)',
+            '<p><a href="a)b">x</a></p>',
+        ];
+
+        yield 'a backslash before another character stays' => ['C:\\Users\\x', '<p>C:\\Users\\x</p>'];
+
+        yield 'an escape does not change a code block' => ["~~\n\\*a\\*\n~~", '<code>\\*a\\*</code>'];
 
         yield 'image' => [
             '![alt](http://x.fr/a.png {#i .c})',
@@ -265,6 +335,11 @@ final class ConvertTest extends TestCase
     public function test_a_code_block_is_always_escaped(): void
     {
         self::assertSame('<code>&lt;b&gt;</code>', Convert::toHtml("~~\n<b>\n~~", new Options(unsafeAllowRawHtml: true)));
+    }
+
+    public function test_a_control_character_cannot_forge_an_escape(): void
+    {
+        self::assertSame('<p>a42b</p>', Convert::toHtml("a\x0342\x04b"));
     }
 
     public function test_a_converter_is_never_changed(): void

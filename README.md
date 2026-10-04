@@ -61,7 +61,7 @@ The columns show the input and the output. Indentation inside lists and quotes u
 | Ordered list | `1.<tab>One`, one more tab per level | `<ol><li>One</li>…</ol>` |
 | Quote | `><tab>Line` | `<blockquote>Line…</blockquote>` |
 | Code | lines between two lines of `~~` | `<code>…</code>`, escaped, tabs as spaces |
-| Table | `\| A \| B`, a separator line, then rows | `<table><tr><td>…</td></tr>…</table>` |
+| Table | `\| A \| B`, a line of dashes, then rows | `<table><thead><tr><th>…</th></tr></thead><tbody><tr><td>…</td></tr>…</tbody></table>` |
 | Horizontal rule | six dashes or more, alone | `<hr>` |
 | Bold | `*foo*` | `<span class="b">foo</span>` |
 | Italic | `-foo-` | `<span class="i">foo</span>` |
@@ -85,6 +85,34 @@ A style works in a paragraph, a heading, a list item, a quote and a table cell, 
 ### Bare URLs
 
 The `http://` and `https://` URLs written in a text become links. A final `.`, `,`, `;`, `:`, `!`, `?`, `*`, `_`, `~`, `-` or a closing parenthesis that the URL did not open is left outside the link, and the style markers inside a URL are not read. To keep the URLs as text, see the option `autoLinks` below.
+
+### Escape character
+
+A backslash before a marker writes the marker as it is, so that it is not read as a style, a link, a block or an id: `\*not bold\*` gives `*not bold*`.
+
+| Written | Gives | Used for |
+| :--- | :--- | :--- |
+| `\*` `\-` `\_` `\~` | `*` `-` `_` `~` | the style markers |
+| `\[` `\]` `\!` `\(` `\)` | `[` `]` `!` `(` `)` | a link or an image, or a parenthesis in a URL |
+| `\{` `\}` | `{` `}` | the id and the classes: `# Title \{#id}` keeps its braces |
+| `\#` `\+` `\>` | `#` `+` `>` | the start of a heading, a list or a quote |
+| `\\` | `\` | a backslash before one of these characters |
+
+In a table, `\|` writes a bar inside a cell.
+
+A backslash before any other character stays a backslash (`C:\Users` is written as it is), and a code block is never read.
+
+### Tables
+
+The lines before the line of dashes are the header cells (`<th>` in a `<thead>`), and the lines after it are the rows (`<td>` in a `<tbody>`). The colons of the line of dashes align the columns, with a `style="text-align: …"`:
+
+```text
+| Name | Size | Note
+|:-----|-----:|:----:
+| a    | 1    | x
+```
+
+`:---` is left, `---:` is right and `:---:` is the centre. A table without a line of dashes has only `<td>` cells.
 
 ### Id and classes
 
@@ -134,9 +162,7 @@ KMark never throws on a text. Whatever it does not understand stays in the text,
 
 ## Known limits
 
-- **There is no escape character** to write a style marker that would otherwise be read as a style.
-- **An URL cannot contain a closing parenthesis**: the link stops at the first one.
-- A table has no header cell: every cell is a `td`.
+- **A link URL holds one level of parentheses**: `[x]:(https://e.com/a_(b))` works, `a_((b))` does not. Write `\)` for any other closing parenthesis.
 
 ## Development
 

@@ -27,7 +27,7 @@ final readonly class Attributes
      */
     public static function extract(string $text): array
     {
-        if (1 !== preg_match('/^(.*?)\s*\{([#.\w\s-]*)\}\s*$/s', $text, $match)) {
+        if (1 !== preg_match('/^(.*?)\s*(?<!\\\\)\{([#.\w\s-]*)\}\s*$/s', $text, $match)) {
             return [$text, new self()];
         }
 
