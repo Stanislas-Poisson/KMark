@@ -13,7 +13,7 @@ use KMark\Options;
  * An underscore inside a word is not a marker, so snake_case_name stays as it is.
  *
  * Each style is written with the element of the option "tags". When two styles use the same element with classes,
- * they are merged into one: bold and italic as "span" give <span class="b i">.
+ * they are merged into one: bold and italic as "span" give `<span class="b i">`.
  *
  * @internal
  */

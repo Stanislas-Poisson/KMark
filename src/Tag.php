@@ -9,7 +9,7 @@ use InvalidArgumentException;
 /**
  * The HTML element that writes a text style: its name and its CSS classes.
  *
- *     new Tag('span', ['bold']);   // <span class="bold">…</span>
+ *     new Tag('span', ['bold']);   // `<span class="bold">…</span>`
  */
 final readonly class Tag
 {

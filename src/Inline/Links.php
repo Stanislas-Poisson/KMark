@@ -10,7 +10,7 @@ use KMark\References;
 use KMark\Stash;
 
 /**
- * Links and images, written inline ("[text](url "title")") or with a reference ("[text][label]", "[label]").
+ * Links and images, written inline (`[text](url "title")`) or with a reference (`[text][label]`, `[label]`).
  *
  * A link, once made, is put aside in the stash with its text already read, so that nothing reads it again.
  *
