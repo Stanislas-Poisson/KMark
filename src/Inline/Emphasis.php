@@ -7,8 +7,8 @@ namespace KMark\Inline;
 use KMark\Options;
 
 /**
- * The text styles. As in the original Markdown, `*x*` and `_x_` are italic and `**x**` and `__x__` are bold. As on
- * GitHub, `~~x~~` is strikethrough. `++x++` is underline, which Markdown does not have.
+ * The text styles. As in the original Markdown, `*x*` and `_x_` are italic and `**x**` and `__x__` are bold. `--x--` and, as on
+ * GitHub, `~~x~~` are strikethrough, written as deleted text. `++x++` is underline, which Markdown does not have.
  *
  * An underscore inside a word is not a marker, so snake_case_name stays as it is.
  *
@@ -33,6 +33,7 @@ final readonly class Emphasis
         $italic    = $this->options->tag('italic')->wrap();
         $rules     = [
             '/(?<![+\w])\+\+(?=\S)(.+?)(?<=\S)\+\+(?!\+)/s'      => $underline,
+            '/(?<![-\w])--(?=\S)(.+?)(?<=\S)--(?!-)/s'           => $strike,
             '/(?<![~\w])~~(?=\S)(.+?)(?<=\S)~~(?!~)/s'           => $strike,
             '/(?<![*\w])\*\*(?=\S)(.+?[*]*)(?<=\S)\*\*(?!\*)/s'  => $bold,
             '/(?<![_\w])__(?=\S)(.+?[_]*)(?<=\S)__(?![_\w])/s'   => $bold,

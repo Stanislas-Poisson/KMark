@@ -63,7 +63,7 @@ The blocks of the output are separated by a line break, and the HTML is the one 
 | Line break | two spaces or a backslash at the end of a line | `<br>` |
 | Italic | `*foo*` or `_foo_` | `<i>foo</i>` |
 | Bold | `**foo**` or `__foo__` | `<b>foo</b>` |
-| Strikethrough | `~~foo~~` | `<s>foo</s>` |
+| Strikethrough | `--foo--` or `~~foo~~` | `<del>foo</del>` |
 | Underline | `++foo++` | `<u>foo</u>` |
 | Code | `` `foo` `` | `<code>foo</code>` |
 | Code block | lines between two lines of three backticks (or tildes), or lines indented by four spaces | `<pre><code>…</code></pre>` |
@@ -95,11 +95,11 @@ Sub title
 | Bold | `**bold**` or `__bold__` | `<b>bold</b>` | `bold` |
 | Italic | `*italic*` or `_italic_` | `<i>italic</i>` | `italic` |
 | Underline | `++underline++` | `<u>underline</u>` | `underline` |
-| Strikethrough | `~~strike~~` | `<s>strike</s>` | `strike` |
+| Strikethrough | `--strike--` or `~~strike~~` | `<del>strike</del>` | `strike` |
 
-`***both***` is bold and italic. Bold and italic are the ones of the original Markdown, the strikethrough comes from GitHub, and the underline is KMark's (Markdown has none). An underscore inside a word is not a marker, so `snake_case_name` stays as it is, and `C++` is not an underline.
+`***both***` is bold and italic. Bold and italic are the ones of the original Markdown, the strikethrough `~~x~~` comes from GitHub, and `--x--` and the underline are KMark's (Markdown has none). An underscore inside a word is not a marker, so `snake_case_name` stays as it is, and `C++` is not an underline.
 
-The default elements are the plain HTML ones: `<b>`, `<i>`, `<u>` and `<s>`. If you want other elements (`<strong>`, `<em>`, `<ins>`, `<del>`) or classes (`<span class="b">`), set them with the option `tags`, see [Options](#options).
+The default elements are the plain HTML ones: `<b>`, `<i>`, `<u>` and `<del>`. If you want other elements (`<strong>`, `<em>`, `<ins>`, `<s>`) or classes (`<span class="b">`), set them with the option `tags`, see [Options](#options).
 
 ### Code
 
@@ -207,7 +207,7 @@ echo Convert::toHtml('**hello** https://example.com', $options);
 | :--- | :--- | :--- |
 | `autoLinks` | `true` | Turn the bare `http://` and `https://` URLs into links. |
 | `allowedSchemes` | `['http', 'https', 'mailto', 'tel', 'ftp']` | The schemes that a link or an image can have, in lowercase. A relative URL is always allowed. |
-| `tags` | `[]` | The element that writes each text style, by style: `bold`, `italic`, `underline` and `strike`, each a `new Tag('name', ['class', …])`. The default is `<b>`, `<i>`, `<u>` and `<s>`. See [Choose the elements of the styles](#choose-the-elements-of-the-styles). |
+| `tags` | `[]` | The element that writes each text style, by style: `bold`, `italic`, `underline` and `strike`, each a `new Tag('name', ['class', …])`. The default is `<b>`, `<i>`, `<u>` and `<del>`. See [Choose the elements of the styles](#choose-the-elements-of-the-styles). |
 | `unsafeAllowRawHtml` | `false` | Keep the HTML written in the text instead of escaping it: the tags in a text, and the blocks that start with a tag. **Never use it on a text you do not trust**: it allows scripts. Code stays escaped. |
 
 ### Choose the elements of the styles
@@ -215,12 +215,12 @@ echo Convert::toHtml('**hello** https://example.com', $options);
 The default elements carry no class. To use another element, or a `<span>` with a class that your style sheet knows, give a `Tag` for each style:
 
 ```php
-// <strong>, <em>, <ins> and <del>
+// <strong>, <em>, <ins> and <s>
 $semantic = new Options(tags: [
     'bold'      => new Tag('strong'),
     'italic'    => new Tag('em'),
     'underline' => new Tag('ins'),
-    'strike'    => new Tag('del'),
+    'strike'    => new Tag('s'),
 ]);
 
 // <span class="b">, <span class="i">…
@@ -257,7 +257,7 @@ The syntax of `1.x` was KMark's own. `2.0` follows Markdown, so a text has to be
 | `-italic-` | `*italic*` or `_italic_` |
 | `_underline_` | `++underline++` |
 | `~strikethrough~` | `~~strikethrough~~` |
-| `<span class="b">` for a style | `<b>`, `<i>`, `<u>`, `<s>` by default, or the elements you choose with `tags` |
+| `<span class="b">` for a style | `<b>`, `<i>`, `<u>`, `<del>` by default, or the elements you choose with `tags` |
 | `[text]:(url "title" {#id .class})` | `[text](url "title"){#id .class}` |
 | `![alt](url {#id .class})` | `![alt](url){#id .class}` |
 | code between two lines of `~~` | code between two lines of three backticks, or three tildes |

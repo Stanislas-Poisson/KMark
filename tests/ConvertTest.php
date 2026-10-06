@@ -627,7 +627,7 @@ two</p>',
 
         yield 'del' => [
             '~~gone~~ and ~one~',
-            '<p><s>gone</s> and ~one~</p>',
+            '<p><del>gone</del> and ~one~</p>',
         ];
 
         yield 'emph in link' => [
@@ -1013,5 +1013,6 @@ ___
     public function test_underline_and_plus_signs(): void
     {
         self::assertSame('<p><u>a</u> C++ and C++</p>', Convert::toHtml('++a++ C++ and C++'));
+        self::assertSame('<p><del>a</del> <del>b</del> well-known a -- b -- c</p>', Convert::toHtml('--a-- ~~b~~ well-known a -- b -- c'));
     }
 }

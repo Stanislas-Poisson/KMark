@@ -16,7 +16,7 @@ final readonly class Options
     /**
      * The styles, and the element that writes each of them by default.
      */
-    private const array STYLES = ['bold' => 'b', 'italic' => 'i', 'underline' => 'u', 'strike' => 's'];
+    private const array STYLES = ['bold' => 'b', 'italic' => 'i', 'underline' => 'u', 'strike' => 'del'];
 
     /**
      * @param bool               $autoLinks          turn the bare "http://" and "https://" URLs into links
@@ -25,7 +25,7 @@ final readonly class Options
      * @param list<string>       $allowedSchemes     the schemes that a link or an image can have, in lowercase;
      *                                               a relative URL is always allowed
      * @param array<string, Tag> $tags               the element that writes a style, by style: "bold" (default
-     *                                               `<b>`), "italic" (`<i>`), "underline" (`<u>`) and "strike" (`<s>`)
+     *                                               `<b>`), "italic" (`<i>`), "underline" (`<u>`) and "strike" (`<del>`)
      *
      * @throws InvalidArgumentException when a scheme or a style is not valid
      */

@@ -16,7 +16,7 @@ features:
   - title: An id and classes
     details: "Write {#id .class} after a heading, a paragraph, a list item, a link or a code span, or on a line of its own for a block."
   - title: Your own elements
-    details: "Bold, italic, underline and strikethrough are b, i, u and s. Choose other elements or a span with a class with the option tags."
+    details: "Bold, italic, underline and strikethrough are b, i, u and del. Choose other elements or a span with a class with the option tags."
 ---
 
 ## Quick start
