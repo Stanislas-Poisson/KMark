@@ -2,6 +2,26 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project follows [Semantic Versioning](https://semver.org/) from the version 1.0.0.
 
+## 2.0.0 - 2026-10-06
+
+KMark now follows the original Markdown instead of a syntax of its own ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)). The id and class rules are kept.
+
+### Changed
+
+- **Breaking:** bold is `**x**`, italic `*x*` or `_x_`, strikethrough `~~x~~`; links are `[text](url "title"){#id .class}`, images `![alt](url)`; code is between backticks, and a code block between three backticks or tildes with its language, or indented by four spaces; lists are `-`, `*`, `+` or `1.`, nested by indenting; quotes are `> text`. See "Upgrading from 1.x" in the README.
+- **Breaking:** the HTML follows the usual converters: one block per line, the plain `<b>`, `<i>`, `<u>` and `<del>` for the styles, `<pre><code class="language-x">`, tight and loose lists.
+- The parser was rewritten in small classes, one per kind of block and of inline element.
+
+### Added
+
+- Setext headings, reference links and definitions, `<url>` autolinks, hard line breaks, lazy quotes and list items, tables with escaped bars, numbered lists with their start, and `{#id .class}` on a line of its own for any block.
+- The option `tags` chooses the element of each style, with its classes: `new Tag('span', ['bold'])`.
+- The option `unsafeAllowRawHtml` also keeps HTML blocks.
+
+### Removed
+
+- **Breaking:** the option `styleClasses` and `Options::DEFAULT_STYLE_CLASSES`, replaced by `tags`.
+
 ## 1.0.1 - 2026-10-06
 
 ### Added
