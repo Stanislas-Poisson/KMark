@@ -9,7 +9,7 @@ KMark now follows the original Markdown instead of a syntax of its own ([#34](ht
 ### Changed
 
 - **Breaking:** bold is `**x**`, italic `*x*` or `_x_`, strikethrough `~~x~~`; links are `[text](url "title"){#id .class}`, images `![alt](url)`; code is between backticks, and a code block between three backticks or tildes with its language, or indented by four spaces; lists are `-`, `*`, `+` or `1.`, nested by indenting; quotes are `> text`. See "Upgrading from 1.x" in the README.
-- **Breaking:** the HTML follows the usual converters: one block per line, `<strong>`, `<em>`, `<del>`, `<pre><code class="language-x">`, tight and loose lists.
+- **Breaking:** the HTML follows the usual converters: one block per line, the plain `<b>`, `<i>`, `<u>` and `<s>` for the styles, `<pre><code class="language-x">`, tight and loose lists.
 - The parser was rewritten in small classes, one per kind of block and of inline element.
 
 ### Added

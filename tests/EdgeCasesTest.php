@@ -139,7 +139,7 @@ c
 
 ---',
             '<h1>T</h1>
-<p>text <em>a</em></p>
+<p>text <i>a</i></p>
 <ul>
 <li>x</li>
 </ul>
@@ -278,7 +278,7 @@ c
 
         yield 'underscores around words' => [
             '_a_b and a_b_ and __a__b',
-            '<p><em>a_b and a_b</em> and __a__b</p>',
+            '<p><i>a_b and a_b</i> and __a__b</p>',
         ];
 
         yield 'heading with both' => [

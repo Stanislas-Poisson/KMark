@@ -14,13 +14,18 @@ use InvalidArgumentException;
 final readonly class Options
 {
     /**
+     * The styles, and the element that writes each of them by default.
+     */
+    private const array STYLES = ['bold' => 'b', 'italic' => 'i', 'underline' => 'u', 'strike' => 's'];
+
+    /**
      * @param bool               $autoLinks          turn the bare "http://" and "https://" URLs into links
      * @param bool               $unsafeAllowRawHtml keep the HTML written in the text instead of escaping it:
      *                                               never use it on a text you do not trust, it allows scripts
      * @param list<string>       $allowedSchemes     the schemes that a link or an image can have, in lowercase;
      *                                               a relative URL is always allowed
-     * @param array<string, Tag> $tags               the element that writes a style, by style: "strong" (default
-     *                                               <strong>), "em" (<em>) and "del" (<del>)
+     * @param array<string, Tag> $tags               the element that writes a style, by style: "bold" (default
+     *                                               <b>), "italic" (<i>), "underline" (<u>) and "strike" (<s>)
      *
      * @throws InvalidArgumentException when a scheme or a style is not valid
      */
@@ -39,7 +44,7 @@ final readonly class Options
      */
     public function tag(string $style): Tag
     {
-        return $this->tags[$style] ?? new Tag($style);
+        return $this->tags[$style] ?? new Tag(self::STYLES[$style]);
     }
 
     /**
@@ -63,9 +68,9 @@ final readonly class Options
     private function assertStyles(array $tags): void
     {
         foreach (array_keys($tags) as $style) {
-            if (! in_array($style, ['strong', 'em', 'del'], true)) {
+            if (! isset(self::STYLES[$style])) {
                 throw new InvalidArgumentException(
-                    sprintf('"%s" is not a style: use "strong", "em" or "del".', $style),
+                    sprintf('"%s" is not a style: use "bold", "italic", "underline" or "strike".', $style),
                 );
             }
         }

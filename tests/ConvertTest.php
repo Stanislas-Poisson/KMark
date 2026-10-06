@@ -302,7 +302,7 @@ line two</h1>',
 
         yield 'bare url' => [
             'see https://x.org/a_b_c. and (https://x.org/p_(q)) *https://x.org*',
-            '<p>see <a href="https://x.org/a_b_c">https://x.org/a_b_c</a>. and (<a href="https://x.org/p_(q)">https://x.org/p_(q)</a>) <em><a href="https://x.org">https://x.org</a></em></p>',
+            '<p>see <a href="https://x.org/a_b_c">https://x.org/a_b_c</a>. and (<a href="https://x.org/p_(q)">https://x.org/p_(q)</a>) <i><a href="https://x.org">https://x.org</a></i></p>',
         ];
     }
 
@@ -617,7 +617,7 @@ two</p>',
 
         yield 'em strong' => [
             '*a* _b_ **c** __d__ ***e***',
-            '<p><em>a</em> <em>b</em> <strong>c</strong> <strong>d</strong> <strong><em>e</em></strong></p>',
+            '<p><i>a</i> <i>b</i> <b>c</b> <b>d</b> <b><i>e</i></b></p>',
         ];
 
         yield 'snake' => [
@@ -627,12 +627,12 @@ two</p>',
 
         yield 'del' => [
             '~~gone~~ and ~one~',
-            '<p><del>gone</del> and ~one~</p>',
+            '<p><s>gone</s> and ~one~</p>',
         ];
 
         yield 'emph in link' => [
             '[*a* b](/u)',
-            '<p><a href="/u"><em>a</em> b</a></p>',
+            '<p><a href="/u"><i>a</i> b</a></p>',
         ];
 
         yield 'code span' => [
@@ -672,7 +672,7 @@ two</p>',
 
         yield 'unicode' => [
             'é *à* `ü`',
-            '<p>é <em>à</em> <code>ü</code></p>',
+            '<p>é <i>à</i> <code>ü</code></p>',
         ];
 
         yield 'crlf' => [
@@ -884,7 +884,7 @@ ___
 </thead>
 <tbody>
 <tr>
-<td><em>x</em> <code>y</code></td>
+<td><i>x</i> <code>y</code></td>
 </tr>
 </tbody>
 </table>',
@@ -914,7 +914,7 @@ ___
     {
         $converter = (new Convert(new Options(autoLinks: false)))->withText("\n\n*a*\n")->convert();
 
-        self::assertSame('<p><em>a</em></p>', $converter->getText());
+        self::assertSame('<p><i>a</i></p>', $converter->getText());
     }
 
     public function test_a_text_that_forges_a_token_is_written_as_text(): void
@@ -973,7 +973,7 @@ ___
     {
         $html = Convert::toHtml("<div class=\"x\">\nraw *no*\n</div>\n\ntext <b>bold</b> <!-- c -->\n\n*em*", new Options(unsafeAllowRawHtml: true));
 
-        self::assertSame("<div class=\"x\">\nraw *no*\n</div>\n<p>text <b>bold</b> <!-- c --></p>\n<p><em>em</em></p>", $html);
+        self::assertSame("<div class=\"x\">\nraw *no*\n</div>\n<p>text <b>bold</b> <!-- c --></p>\n<p><i>em</i></p>", $html);
     }
 
     #[DataProvider('provideRulesAndTables')]
@@ -982,17 +982,36 @@ ___
         self::assertSame($html, Convert::toHtml($markdown));
     }
 
-    public function test_the_element_of_a_style_can_be_chosen(): void
+    public function test_styles_written_with_the_same_element_and_classes_are_merged(): void
     {
         $options = new Options(tags: [
-            'strong' => new Tag('b'),
-            'em'     => new Tag('span', ['italic', 'big']),
-            'del'    => new Tag('s'),
+            'bold'   => new Tag('span', ['b']),
+            'italic' => new Tag('span', ['i']),
         ]);
 
         self::assertSame(
-            '<p><b>a</b> <span class="italic big">b</span> <s>c</s></p>',
-            Convert::toHtml('**a** _b_ ~~c~~', $options),
+            '<p><span class="b i">a</span> <span class="b">b <span class="i">c</span> d</span></p>',
+            Convert::toHtml('***a*** **b *c* d**', $options),
         );
+    }
+
+    public function test_the_element_of_a_style_can_be_chosen(): void
+    {
+        $options = new Options(tags: [
+            'bold'      => new Tag('strong'),
+            'italic'    => new Tag('em'),
+            'underline' => new Tag('ins', ['u']),
+            'strike'    => new Tag('del'),
+        ]);
+
+        self::assertSame(
+            '<p><strong>a</strong> <em>b</em> <ins class="u">c</ins> <del>d</del></p>',
+            Convert::toHtml('**a** _b_ ++c++ ~~d~~', $options),
+        );
+    }
+
+    public function test_underline_and_plus_signs(): void
+    {
+        self::assertSame('<p><u>a</u> C++ and C++</p>', Convert::toHtml('++a++ C++ and C++'));
     }
 }
