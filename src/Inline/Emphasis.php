@@ -7,8 +7,8 @@ namespace KMark\Inline;
 use KMark\Options;
 
 /**
- * The text styles. As in the original Markdown, "*x*" and "_x_" are italic and "**x**" and "__x__" are bold. As on
- * GitHub, "~~x~~" is strikethrough. "++x++" is underline, which Markdown does not have.
+ * The text styles. As in the original Markdown, `*x*` and `_x_` are italic and `**x**` and `__x__` are bold. As on
+ * GitHub, `~~x~~` is strikethrough. `++x++` is underline, which Markdown does not have.
  *
  * An underscore inside a word is not a marker, so snake_case_name stays as it is.
  *
