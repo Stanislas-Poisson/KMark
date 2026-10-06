@@ -14,422 +14,970 @@ final class ConvertTest extends TestCase
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function escapingProvider(): iterable
+    public static function provideAttributes(): iterable
     {
-        yield 'script in a paragraph' => ['<script>alert(1)</script>', '<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>'];
+        yield 'attr line' => [
+            '# T
+{.a}
 
-        yield 'html in a heading' => ['# <b>x</b>', '<h1>&lt;b&gt;x&lt;/b&gt;</h1>'];
+- x
+- y
+{#l .m}
 
-        yield 'html in a list' => ["+\t<i>x</i>", '<ul><li>&lt;i&gt;x&lt;/i&gt;</li></ul>'];
+> q
+{.q}
 
-        yield 'html in a table cell' => ["| <u>x</u>\n| 1", '<table><tr><td>&lt;u&gt;x&lt;/u&gt;</td></tr><tr><td>1</td></tr></table>'];
+```
+c
+```
+{.c}
 
-        yield 'html in a link text' => ['[<b>x</b>]:(a)', '<p><a href="a">&lt;b&gt;x&lt;/b&gt;</a></p>'];
+| A |
+|---|
+| 1 |
+{#t}',
+            '<h1 class="a">T</h1>
+<ul id="l" class="m">
+<li>x</li>
+<li>y</li>
+</ul>
+<blockquote class="q">
+<p>q</p>
+</blockquote>
+<pre class="c"><code>c
+</code></pre>
+<table id="t">
+<thead>
+<tr>
+<th>A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+</tr>
+</tbody>
+</table>',
+        ];
 
-        yield 'double quote in an alt text' => ['![a"b](x.png)', '<p><img src="x.png" alt="a&quot;b"></p>'];
+        yield 'attr line bad' => [
+            'text
 
-        yield 'double quote that ends an attribute' => ['[x]:(a"onclick="y)', '<p><a href="a&quot;onclick=&quot;y">x</a></p>'];
+{nothing}',
+            '<p>text</p>
+<p>{nothing}</p>',
+        ];
 
-        yield 'javascript link' => ['[x]:(javascript:alert)', '<p>x</p>'];
-
-        yield 'javascript link with a tab and capitals' => ["[x]:(JaVa\tScRiPt:alert)", '<p>x</p>'];
-
-        yield 'data image' => ['![x](data:image/png;base64,AAAA)', '<p>x</p>'];
-
-        yield 'mailto link' => ['[x]:(mailto:a@b.fr)', '<p><a href="mailto:a@b.fr">x</a></p>'];
-
-        yield 'relative link' => ['[x]:(/page#top)', '<p><a href="/page#top">x</a></p>'];
+        yield 'attr line para' => [
+            'text
+{.p}',
+            '<p class="p">text</p>',
+        ];
     }
 
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function syntaxProvider(): iterable
+    public static function provideCodeBlocks(): iterable
     {
-        yield 'heading' => ['## Sub title', '<h2>Sub title</h2>'];
-
-        yield 'paragraphs' => ["Para 1\n\nPara 2", "<p>Para 1</p>\n\n<p>Para 2</p>"];
-
-        yield 'horizontal rule' => ['------', '<hr>'];
-
-        yield 'unordered list' => [
-            "+\tElem 1\n+\tElem 2\n+\tElem 3",
-            '<ul><li>Elem 1</li><li>Elem 2</li><li>Elem 3</li></ul>',
+        yield 'fence' => [
+            '```
+plain
+```',
+            '<pre><code>plain
+</code></pre>',
         ];
 
-        yield 'ordered list' => [
-            "1.\tElem 1\n2.\tElem 2\n3.\tElem 3",
-            '<ol><li>Elem 1</li><li>Elem 2</li><li>Elem 3</li></ol>',
+        yield 'fence lang' => [
+            '```php
+<?php
+echo 1;
+```',
+            '<pre><code class="language-php">&lt;?php
+echo 1;
+</code></pre>',
         ];
 
-        yield 'quote' => [">\tLine 1\n>\tLine 2", "<blockquote>Line 1\nLine 2</blockquote>"];
-
-        yield 'table with a header' => [
-            "| A | B\n| --------- | ---------\n| 1 | 2",
-            '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>',
+        yield 'fence tilde' => [
+            '~~~js
+let a;
+~~~',
+            '<pre><code class="language-js">let a;
+</code></pre>',
         ];
 
-        yield 'table without a line of dashes' => [
-            "| A | B\n| 1 | 2",
-            '<table><tr><td>A</td><td>B</td></tr><tr><td>1</td><td>2</td></tr></table>',
+        yield 'fence attrs' => [
+            '```php {#a .b}
+echo 1;
+```',
+            '<pre id="a" class="b"><code class="language-php">echo 1;
+</code></pre>',
         ];
 
-        yield 'table with a line of dashes first' => [
-            "|---|---\n| 1 | 2",
-            '<table><tr><td>1</td><td>2</td></tr></table>',
+        yield 'fence unclosed' => [
+            '```
+open',
+            '<pre><code>open
+</code></pre>',
         ];
 
-        yield 'table with several header lines' => [
-            "| A | B\n| C | D\n|---|---\n| 1 | 2",
-            '<table><thead><tr><th>A</th><th>B</th></tr><tr><th>C</th><th>D</th></tr></thead>'
-            . '<tbody><tr><td>1</td><td>2</td></tr></tbody></table>',
+        yield 'fence blank lines' => [
+            '```
+a
+
+
+b
+```',
+            '<pre><code>a
+
+
+b
+</code></pre>',
         ];
 
-        yield 'table with aligned columns' => [
-            "| A | B | C | D\n|:---|---:|:---:|---\n| 1 | 2 | 3 | 4",
-            '<table><thead><tr><th style="text-align: left">A</th><th style="text-align: right">B</th>'
-            . '<th style="text-align: center">C</th><th>D</th></tr></thead><tbody><tr>'
-            . '<td style="text-align: left">1</td><td style="text-align: right">2</td>'
-            . '<td style="text-align: center">3</td><td>4</td></tr></tbody></table>',
+        yield 'fence longer' => [
+            '````
+```
+inner
+```
+````',
+            '<pre><code>```
+inner
+```
+</code></pre>',
         ];
 
-        yield 'table with an escaped bar and a style in a cell' => [
-            "| a \\| b | *c*\n|---|---\n| 1 | 2",
-            '<table><thead><tr><th>a | b</th><th><span class="b">c</span></th></tr></thead>'
-            . '<tbody><tr><td>1</td><td>2</td></tr></tbody></table>',
+        yield 'indented code' => [
+            '    code
+    more
+
+        deeper',
+            '<pre><code>code
+more
+
+    deeper
+</code></pre>',
         ];
 
-        yield 'link with parentheses in the URL' => [
-            '[x]:(https://e.com/a_(b))',
-            '<p><a href="https://e.com/a_(b)">x</a></p>',
+        yield 'indented not para' => [
+            'text
+    still text',
+            '<p>text
+still text</p>',
+        ];
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideHeadings(): iterable
+    {
+        yield 'atx' => [
+            '# One
+## Two
+###### Six
+####### Seven',
+            '<h1>One</h1>
+<h2>Two</h2>
+<h6>Six</h6>
+<p>####### Seven</p>',
         ];
 
-        yield 'link with parentheses, a title and a class' => [
-            '[x]:(/a(b) "t" {.c}) end (y)',
-            '<p><a href="/a(b)" title="t" class="c">x</a> end (y)</p>',
+        yield 'atx closing' => [
+            '## Title ##
+### Other ###   ',
+            '<h2>Title</h2>
+<h3>Other</h3>',
         ];
 
-        yield 'image with parentheses in the URL' => ['![i](a_(b).png)', '<p><img src="a_(b).png" alt="i"></p>'];
-
-        yield 'escaped style markers' => [
-            '\\*a\\* \\-b\\- \\_c\\_ \\~d\\~ *e*',
-            '<p>*a* -b- _c_ ~d~ <span class="b">e</span></p>',
+        yield 'atx no space' => [
+            '#hashtag',
+            '<p>#hashtag</p>',
         ];
 
-        yield 'escaped backslash' => ['a \\\\ b', '<p>a \\ b</p>'];
-
-        yield 'escaped block markers' => [
-            "\\# not a heading\n\n\\> not a quote\n\n\\+ not a list",
-            "<p># not a heading</p>\n\n<p>&gt; not a quote</p>\n\n<p>+ not a list</p>",
+        yield 'atx empty' => [
+            '#
+##',
+            '<h1></h1>
+<h2></h2>',
         ];
 
-        yield 'escaped link and image' => [
-            '\\[x]:(a) \\![i](b)',
-            '<p>[x]:(a) ![i](b)</p>',
+        yield 'atx attrs' => [
+            '## Title {#id .a .b}',
+            '<h2 id="id" class="a b">Title</h2>',
         ];
 
-        yield 'escaped braces keep the text' => ['# T \\{#id}', '<h1>T {#id}</h1>'];
+        yield 'setext' => [
+            'Title
+=====
 
-        yield 'escaped parentheses in a URL' => [
-            '[x]:(a\\)b)',
-            '<p><a href="a)b">x</a></p>',
+Sub
+---',
+            '<h1>Title</h1>
+<h2>Sub</h2>',
         ];
 
-        yield 'a backslash before another character stays' => ['C:\\Users\\x', '<p>C:\\Users\\x</p>'];
+        yield 'setext multi' => [
+            'Line one
+line two
+===',
+            '<h1>Line one
+line two</h1>',
+        ];
 
-        yield 'an escape does not change a code block' => ["~~\n\\*a\\*\n~~", '<code>\\*a\\*</code>'];
+        yield 'setext attrs' => [
+            'Title {.x}
+===',
+            '<h1 class="x">Title</h1>',
+        ];
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLinksAndImages(): iterable
+    {
+        yield 'link' => [
+            '[t](http://x.org "Ti") [u](/p \'T2\') [e]()',
+            '<p><a href="http://x.org" title="Ti">t</a> <a href="/p" title="T2">u</a> <a href="">e</a></p>',
+        ];
+
+        yield 'link angle' => [
+            '[t](<http://x.org/a b>)',
+            '<p><a href="http://x.org/a b">t</a></p>',
+        ];
+
+        yield 'link parens' => [
+            '[t](http://x.org/a_(b))',
+            '<p><a href="http://x.org/a_(b)">t</a></p>',
+        ];
+
+        yield 'link attrs' => [
+            '[t](/u){#i .c}',
+            '<p><a href="/u" id="i" class="c">t</a></p>',
+        ];
+
+        yield 'link unsafe' => [
+            '[t](javascript:alert(1)) ![i](data:text/html;x)',
+            '<p>t i</p>',
+        ];
+
+        yield 'ref link' => [
+            '[t][a] and [b][] and [c]
+
+[a]: http://a.org "A"
+[b]: /b
+[c]: <http://c.org> \'C\'',
+            '<p><a href="http://a.org" title="A">t</a> and <a href="/b">b</a> and <a href="http://c.org" title="C">c</a></p>',
+        ];
+
+        yield 'ref missing' => [
+            '[t][nope] and [x]',
+            '<p>[t][nope] and [x]</p>',
+        ];
+
+        yield 'ref in fence' => [
+            '```
+[a]: /x
+```
+
+[a]',
+            '<pre><code>[a]: /x
+</code></pre>
+<p>[a]</p>',
+        ];
 
         yield 'image' => [
-            '![alt](http://x.fr/a.png {#i .c})',
-            '<p><img src="http://x.fr/a.png" alt="alt" id="i" class="c"></p>',
+            '![alt *x*](/i.png "T"){.img} ![r][im]
+
+[im]: /r.png',
+            '<p><img src="/i.png" alt="alt *x*" title="T" class="img"> <img src="/r.png" alt="r"></p>',
         ];
 
-        yield 'image without attributes' => [
-            '![alt](http://x.fr/a.png)',
-            '<p><img src="http://x.fr/a.png" alt="alt"></p>',
+        yield 'autolink' => [
+            '<http://x.org/a?b=1&c=2> <me@x.org> <javascript:alert(1)>',
+            '<p><a href="http://x.org/a?b=1&amp;c=2">http://x.org/a?b=1&amp;c=2</a> <a href="mailto:me@x.org">me@x.org</a> &lt;javascript:alert(1)&gt;</p>',
         ];
 
-        yield 'link' => [
-            '[Example]:(https://example.com)',
-            '<p><a href="https://example.com">Example</a></p>',
+        yield 'bare url' => [
+            'see https://x.org/a_b_c. and (https://x.org/p_(q)) *https://x.org*',
+            '<p>see <a href="https://x.org/a_b_c">https://x.org/a_b_c</a>. and (<a href="https://x.org/p_(q)">https://x.org/p_(q)</a>) <em><a href="https://x.org">https://x.org</a></em></p>',
         ];
-
-        yield 'link with title' => [
-            '[Example]:(https://example.com "Go")',
-            '<p><a href="https://example.com" title="Go">Example</a></p>',
-        ];
-
-        yield 'document' => [
-            "# Title\n\nSome text with a [link]:(https://example.com).\n\n+\tOne\n+\tTwo",
-            "<h1>Title</h1>\n\n<p>Some text with a <a href=\"https://example.com\">link</a>.</p>\n\n<ul><li>One</li><li>Two</li></ul>",
-        ];
-
-        yield 'heading with id and classes' => ['# Mon titre {#monId .a .b}', '<h1 id="monId" class="a b">Mon titre</h1>'];
-
-        yield 'heading followed by a text' => ["# T\ntext", "<h1>T</h1>\n\n<p>text</p>"];
-
-        yield 'paragraph with id and classes' => ['Hello {#intro .lead}', '<p id="intro" class="lead">Hello</p>'];
-
-        yield 'braces that are not attributes' => ['Use {x} here', '<p>Use {x} here</p>'];
-
-        yield 'braces at the end that are not attributes' => ['Hello {x}', '<p>Hello {x}</p>'];
-
-        yield 'empty braces' => ['Hello {}', '<p>Hello {}</p>'];
-
-        yield 'two ids keep the first one' => ['Hello {#a #b .c}', '<p id="a" class="c">Hello</p>'];
-
-        yield 'link with title, id and classes' => [
-            '[Site]:(http://x.fr "Go" {#i .c})',
-            '<p><a href="http://x.fr" title="Go" id="i" class="c">Site</a></p>',
-        ];
-
-        yield 'link and image in the same text' => [
-            '![alt](a.png) and [a]:(b)',
-            '<p><img src="a.png" alt="alt"> and <a href="b">a</a></p>',
-        ];
-
-        yield 'ampersand in an URL' => [
-            '[a]:(https://x.fr/?a=1&b=2)',
-            '<p><a href="https://x.fr/?a=1&amp;b=2">a</a></p>',
-        ];
-
-        yield 'quote with id and classes' => [">\tA {#q .c}\n>\tB {.d}", '<blockquote id="q" class="c d">A' . "\n" . 'B</blockquote>'];
-
-        yield 'nested unordered list' => [
-            "+\tA\n\t+\tB\n+\tC",
-            '<ul><li>A<ul><li>B</li></ul></li><li>C</li></ul>',
-        ];
-
-        yield 'mixed list' => [
-            "1.\tA\n\t+\tB\n2.\tC",
-            '<ol><li>A<ul><li>B</li></ul></li><li>C</li></ol>',
-        ];
-
-        yield 'list closed on several levels' => [
-            "+\tA\n\t+\tB\n\t\t+\tC\n+\tD",
-            '<ul><li>A<ul><li>B<ul><li>C</li></ul></li></ul></li><li>D</li></ul>',
-        ];
-
-        yield 'list that ends deep' => [
-            "+\tA\n\t+\tB",
-            '<ul><li>A<ul><li>B</li></ul></li></ul>',
-        ];
-
-        yield 'list item on several lines' => ["+\tA\ncontinued\n+\tB", '<ul><li>A' . "\n" . 'continued</li><li>B</li></ul>'];
-
-        yield 'list item with id and classes' => ["+\tA {#a .b}", '<ul><li id="a" class="b">A</li></ul>'];
-
-        yield 'list that changes type on the same level' => [
-            "+\tA\n1.\tB",
-            '<ul><li>A</li></ul><ol><li>B</li></ol>',
-        ];
-
-        yield 'code' => ["~~\n<div>x</div>\n~~", '<code>&lt;div&gt;x&lt;/div&gt;</code>'];
-
-        yield 'code with a tab and a blank line' => [
-            "~~\n\ta\n\nb\n~~",
-            "<code>&nbsp;&nbsp;&nbsp;&nbsp;a<br />\n<br />\nb</code>",
-        ];
-
-        yield 'code right after a text' => ["Text\n~~\nx\n~~", "<p>Text</p>\n\n<code>x</code>"];
-
-        yield 'unclosed code' => ["~~\ncode", "<p>~~\ncode</p>"];
-
-        yield 'dashes inside a text' => ['a ------ b', '<p>a ------ b</p>'];
-
-        yield 'bold' => ['*foo*', '<p><span class="b">foo</span></p>'];
-
-        yield 'italic' => ['-foo-', '<p><span class="i">foo</span></p>'];
-
-        yield 'underline' => ['_foo_', '<p><span class="u">foo</span></p>'];
-
-        yield 'strikethrough' => ['~foo~', '<p><span class="d">foo</span></p>'];
-
-        yield 'two styles side by side' => ['*a* -b- _c_ ~d~', '<p><span class="b">a</span> <span class="i">b</span> <span class="u">c</span> <span class="d">d</span></p>'];
-
-        yield 'several words' => ['*foo bar*', '<p><span class="b">foo bar</span></p>'];
-
-        yield 'combined styles' => ['_-*foo*-_', '<p><span class="u i b">foo</span></p>'];
-
-        yield 'repeated marker' => ['**foo**', '<p><span class="b">foo</span></p>'];
-
-        yield 'styles inside a text' => [
-            'a *b c* d and ~e~ f',
-            '<p>a <span class="b">b c</span> d and <span class="d">e</span> f</p>',
-        ];
-
-        yield 'styles inside a heading, a list, a table and a quote' => [
-            "# *T*\n\n+\t*L*\n\n| *C*\n\n>\t*Q*",
-            '<h1><span class="b">T</span></h1>' . "\n\n" . '<ul><li><span class="b">L</span></li></ul>' . "\n\n"
-                . '<table><tr><td><span class="b">C</span></td></tr></table>' . "\n\n"
-                . '<blockquote><span class="b">Q</span></blockquote>',
-        ];
-
-        yield 'a dash between two words stays' => ['a - b - c', '<p>a - b - c</p>'];
-
-        yield 'an italic between two dashes' => ['a - -b- - c', '<p>a - <span class="i">b</span> - c</p>'];
-
-        yield 'markers with a space inside stay' => ['* foo * and _ bar _', '<p>* foo * and _ bar _</p>'];
-
-        yield 'closing markers not in the reverse order' => ['_*foo_*', '<p>_*foo_*</p>'];
-
-        yield 'a marker with no closing one' => ['a *b', '<p>a *b</p>'];
-
-        yield 'markers inside a word' => ['snake_case_name and well-known-fact and 2013-08-12', '<p>snake_case_name and well-known-fact and 2013-08-12</p>'];
-
-        yield 'styles are not applied in a code block' => ["~~\n*foo*\n~~", '<code>*foo*</code>'];
-
-        yield 'styles are not applied in a link text' => ['[*a*]:(b)', '<p><a href="b">*a*</a></p>'];
-
-        yield 'line break' => ["L1  \nL2", "<p>L1<br>\nL2</p>"];
-
-        yield 'one trailing space is not a line break' => ["L1 \nL2", "<p>L1 \nL2</p>"];
-
-        yield 'bare URL' => [
-            'See https://example.com/a?b=1&c=2.',
-            '<p>See <a href="https://example.com/a?b=1&amp;c=2">https://example.com/a?b=1&amp;c=2</a>.</p>',
-        ];
-
-        yield 'bare URL between parentheses' => [
-            '(https://example.com)',
-            '<p>(<a href="https://example.com">https://example.com</a>)</p>',
-        ];
-
-        yield 'bare URL that holds parentheses' => [
-            'https://en.wikipedia.org/wiki/PHP_(language), ok',
-            '<p><a href="https://en.wikipedia.org/wiki/PHP_(language)">https://en.wikipedia.org/wiki/PHP_(language)</a>, ok</p>',
-        ];
-
-        yield 'bare URL between angle brackets' => [
-            '<https://example.com>',
-            '<p>&lt;<a href="https://example.com">https://example.com</a>&gt;</p>',
-        ];
-
-        yield 'bare URL in a style' => [
-            '*https://example.com*',
-            '<p><span class="b"><a href="https://example.com">https://example.com</a></span></p>',
-        ];
-
-        yield 'markers inside a bare URL' => [
-            'https://example.com/~user/-a-/_b_',
-            '<p><a href="https://example.com/~user/-a-/_b">https://example.com/~user/-a-/_b</a>_</p>',
-        ];
-
-        yield 'bare URL as the text and the target of a link' => [
-            '[https://example.com]:(https://example.com)',
-            '<p><a href="https://example.com">https://example.com</a></p>',
-        ];
-
-        yield 'bare URL in the alt text of an image' => [
-            '![https://example.com](https://example.com/a.png)',
-            '<p><img src="https://example.com/a.png" alt="https://example.com"></p>',
-        ];
-
-        yield 'URL with another scheme' => ['ftp://example.com', '<p>ftp://example.com</p>'];
-
-        yield 'control characters of the input are dropped' => ["a\x01b\x02c https://example.com", '<p>abc <a href="https://example.com">https://example.com</a></p>'];
-
-        yield 'windows line breaks' => ["A\r\n\r\nB", "<p>A</p>\n\n<p>B</p>"];
     }
 
-    public function test_a_code_block_is_always_escaped(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideLists(): iterable
     {
-        self::assertSame('<code>&lt;b&gt;</code>', Convert::toHtml("~~\n<b>\n~~", new Options(unsafeAllowRawHtml: true)));
+        yield 'ul' => [
+            '- a
+- b
+- c',
+            '<ul>
+<li>a</li>
+<li>b</li>
+<li>c</li>
+</ul>',
+        ];
+
+        yield 'ul star plus' => [
+            '* a
++ b
+- c',
+            '<ul>
+<li>a</li>
+</ul>
+<ul>
+<li>b</li>
+</ul>
+<ul>
+<li>c</li>
+</ul>',
+        ];
+
+        yield 'ol' => [
+            '1. a
+2. b
+3. c',
+            '<ol>
+<li>a</li>
+<li>b</li>
+<li>c</li>
+</ol>',
+        ];
+
+        yield 'ol start' => [
+            '3. a
+4. b',
+            '<ol start="3">
+<li>a</li>
+<li>b</li>
+</ol>',
+        ];
+
+        yield 'ol paren' => [
+            '1) a
+2) b',
+            '<ol>
+<li>a</li>
+<li>b</li>
+</ol>',
+        ];
+
+        yield 'nested' => [
+            '- a
+  - b
+    - c
+  - d
+- e',
+            '<ul>
+<li>a
+<ul>
+<li>b
+<ul>
+<li>c</li>
+</ul>
+</li>
+<li>d</li>
+</ul>
+</li>
+<li>e</li>
+</ul>',
+        ];
+
+        yield 'nested ordered' => [
+            '1. a
+   1. b
+   2. c
+2. d',
+            '<ol>
+<li>a
+<ol>
+<li>b</li>
+<li>c</li>
+</ol>
+</li>
+<li>d</li>
+</ol>',
+        ];
+
+        yield 'loose' => [
+            '- a
+
+- b
+
+- c',
+            '<ul>
+<li>
+<p>a</p>
+</li>
+<li>
+<p>b</p>
+</li>
+<li>
+<p>c</p>
+</li>
+</ul>',
+        ];
+
+        yield 'item paragraphs' => [
+            '- a
+
+  b
+- c',
+            '<ul>
+<li>
+<p>a</p>
+<p>b</p>
+</li>
+<li>
+<p>c</p>
+</li>
+</ul>',
+        ];
+
+        yield 'item code' => [
+            '- a
+
+      code
+- b',
+            '<ul>
+<li>
+<p>a</p>
+<pre><code>code
+</code></pre>
+</li>
+<li>
+<p>b</p>
+</li>
+</ul>',
+        ];
+
+        yield 'item quote' => [
+            '- a
+  > q',
+            '<ul>
+<li>a
+<blockquote>
+<p>q</p>
+</blockquote>
+</li>
+</ul>',
+        ];
+
+        yield 'lazy item' => [
+            '- a
+b
+- c',
+            '<ul>
+<li>a
+b</li>
+<li>c</li>
+</ul>',
+        ];
+
+        yield 'empty item' => [
+            '-
+- b',
+            '<ul>
+<li></li>
+<li>b</li>
+</ul>',
+        ];
+
+        yield 'item attrs' => [
+            '- a {.x}
+- b',
+            '<ul>
+<li class="x">a</li>
+<li>b</li>
+</ul>',
+        ];
+
+        yield 'list then para' => [
+            '- a
+- b
+
+text',
+            '<ul>
+<li>a</li>
+<li>b</li>
+</ul>
+<p>text</p>',
+        ];
+
+        yield 'list tab nested' => [
+            '- a
+	- b',
+            '<ul>
+<li>a
+<ul>
+<li>b</li>
+</ul>
+</li>
+</ul>',
+        ];
+
+        yield 'tight blank nested' => [
+            '- a
+  - b
+
+  - c
+- d',
+            '<ul>
+<li>a
+<ul>
+<li>
+<p>b</p>
+</li>
+<li>
+<p>c</p>
+</li>
+</ul>
+</li>
+<li>d</li>
+</ul>',
+        ];
+
+        yield 'ordered interrupt' => [
+            'text
+2. no
+
+text
+1. yes',
+            '<p>text
+2. no</p>
+<p>text</p>
+<ol>
+<li>yes</li>
+</ol>',
+        ];
+
+        yield 'bullet interrupt' => [
+            'text
+- list',
+            '<p>text</p>
+<ul>
+<li>list</li>
+</ul>',
+        ];
+
+        yield 'list in quote in list' => [
+            '- a
+  > b
+  > - c',
+            '<ul>
+<li>a
+<blockquote>
+<p>b</p>
+<ul>
+<li>c</li>
+</ul>
+</blockquote>
+</li>
+</ul>',
+        ];
     }
 
-    public function test_a_control_character_cannot_forge_an_escape(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideParagraphsAndInline(): iterable
     {
-        self::assertSame('<p>a42b</p>', Convert::toHtml("a\x0342\x04b"));
+        yield 'para' => [
+            'One
+two
+
+Three',
+            '<p>One
+two</p>
+<p>Three</p>',
+        ];
+
+        yield 'break spaces' => [
+            'one  
+two',
+            '<p>one<br>
+two</p>',
+        ];
+
+        yield 'break backslash' => [
+            'one\\
+two',
+            '<p>one<br>
+two</p>',
+        ];
+
+        yield 'para attrs' => [
+            'text {.lead}',
+            '<p class="lead">text</p>',
+        ];
+
+        yield 'em strong' => [
+            '*a* _b_ **c** __d__ ***e***',
+            '<p><em>a</em> <em>b</em> <strong>c</strong> <strong>d</strong> <strong><em>e</em></strong></p>',
+        ];
+
+        yield 'snake' => [
+            'snake_case_word and 2*3*4',
+            '<p>snake_case_word and 2*3*4</p>',
+        ];
+
+        yield 'del' => [
+            '~~gone~~ and ~one~',
+            '<p><del>gone</del> and ~one~</p>',
+        ];
+
+        yield 'emph in link' => [
+            '[*a* b](/u)',
+            '<p><a href="/u"><em>a</em> b</a></p>',
+        ];
+
+        yield 'code span' => [
+            'use `code` here and ``a ` b`` and ` x `',
+            '<p>use <code>code</code> here and <code>a ` b</code> and <code>x</code></p>',
+        ];
+
+        yield 'code span attrs' => [
+            '`x`{.k} and `y`{bad}',
+            '<p><code class="k">x</code> and <code>y</code>{bad}</p>',
+        ];
+
+        yield 'code escapes html' => [
+            '`<b>&</b>`',
+            '<p><code>&lt;b&gt;&amp;&lt;/b&gt;</code></p>',
+        ];
+
+        yield 'escapes' => [
+            '\\*not\\* \\_x\\_ \\[a\\](b) \\# \\\\ \\<b\\> \\&amp;',
+            '<p>*not* _x_ [a](b) # \\ &lt;b&gt; &amp;amp;</p>',
+        ];
+
+        yield 'backslash other' => [
+            'C:\\Users and \\a',
+            '<p>C:\\Users and \\a</p>',
+        ];
+
+        yield 'entities' => [
+            'a & b &amp; c &copy; < > "q"',
+            '<p>a &amp; b &amp; c &copy; &lt; &gt; "q"</p>',
+        ];
+
+        yield 'html escaped' => [
+            '<b>x</b> <script>alert(1)</script>',
+            '<p>&lt;b&gt;x&lt;/b&gt; &lt;script&gt;alert(1)&lt;/script&gt;</p>',
+        ];
+
+        yield 'unicode' => [
+            'é *à* `ü`',
+            '<p>é <em>à</em> <code>ü</code></p>',
+        ];
+
+        yield 'crlf' => [
+            'a
+b
+
+c',
+            '<p>a
+b</p>
+<p>c</p>',
+        ];
+
+        yield 'only blank' => [
+            '
+
+   
+',
+            '',
+        ];
+
+        yield 'empty' => [
+            '',
+            '',
+        ];
     }
 
-    public function test_a_converter_is_never_changed(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideQuotes(): iterable
     {
-        $convert   = new Convert();
-        $withText  = $convert->withText('*a*');
-        $converted = $withText->convert();
+        yield 'quote' => [
+            '> a
+> b
 
-        self::assertSame('', $convert->getText());
-        self::assertSame('*a*', $withText->getText());
-        self::assertSame('<p><span class="b">a</span></p>', $converted->getText());
+> c',
+            '<blockquote>
+<p>a
+b</p>
+</blockquote>
+<blockquote>
+<p>c</p>
+</blockquote>',
+        ];
+
+        yield 'quote lazy' => [
+            '> a
+lazy',
+            '<blockquote>
+<p>a
+lazy</p>
+</blockquote>',
+        ];
+
+        yield 'quote nested' => [
+            '> a
+>
+> > b',
+            '<blockquote>
+<p>a</p>
+<blockquote>
+<p>b</p>
+</blockquote>
+</blockquote>',
+        ];
+
+        yield 'quote with blocks' => [
+            '> # H
+> - x
+> - y
+>
+> ```
+> c
+> ```',
+            '<blockquote>
+<h1>H</h1>
+<ul>
+<li>x</li>
+<li>y</li>
+</ul>
+<pre><code>c
+</code></pre>
+</blockquote>',
+        ];
+
+        yield 'quote empty' => [
+            '>',
+            '<blockquote>
+</blockquote>',
+        ];
     }
 
-    public function test_allowed_schemes_can_be_changed(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideRulesAndTables(): iterable
     {
-        $options = new Options(allowedSchemes: ['https', 'gopher']);
+        yield 'hr' => [
+            '---
 
-        self::assertSame(
-            '<p>a <a href="https://x.fr">b</a> <a href="gopher://x.fr">c</a> d e</p>',
-            Convert::toHtml('a [b]:(https://x.fr) [c]:(gopher://x.fr) [d]:(http://x.fr) [e]:(mailto:a@b.fr)', $options),
-        );
-        self::assertSame('<p><a href="/page">x</a></p>', Convert::toHtml('[x]:(/page)', new Options(allowedSchemes: [])));
+***
+
+___
+
+- - -',
+            '<hr>
+<hr>
+<hr>
+<hr>',
+        ];
+
+        yield 'hr after text' => [
+            'text
+
+---',
+            '<p>text</p>
+<hr>',
+        ];
+
+        yield 'table' => [
+            '| A | B |
+|---|---|
+| 1 | 2 |',
+            '<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>',
+        ];
+
+        yield 'table align' => [
+            'A | B | C
+:-- | :-: | --:
+1 | 2 | 3',
+            '<table>
+<thead>
+<tr>
+<th style="text-align: left">A</th>
+<th style="text-align: center">B</th>
+<th style="text-align: right">C</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left">1</td>
+<td style="text-align: center">2</td>
+<td style="text-align: right">3</td>
+</tr>
+</tbody>
+</table>',
+        ];
+
+        yield 'table short row' => [
+            '| A | B |
+|---|---|
+| 1 |',
+            '<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+</tr>
+</tbody>
+</table>',
+        ];
+
+        yield 'table pipe escape' => [
+            '| A |
+|---|
+| a \\| b |',
+            '<table>
+<thead>
+<tr>
+<th>A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a | b</td>
+</tr>
+</tbody>
+</table>',
+        ];
+
+        yield 'table inline' => [
+            '| A |
+|---|
+| *x* `y` |',
+            '<table>
+<thead>
+<tr>
+<th>A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>x</em> <code>y</code></td>
+</tr>
+</tbody>
+</table>',
+        ];
+
+        yield 'table header only' => [
+            '| A | B |
+|---|---|',
+            '<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+</table>',
+        ];
+
+        yield 'not table' => [
+            'a | b
+---',
+            '<h2>a | b</h2>',
+        ];
     }
 
-    public function test_bare_urls_are_links_by_default(): void
+    public function test_a_converter_keeps_its_options_and_holds_the_converted_text(): void
     {
-        self::assertSame(
-            '<p><a href="https://example.com">https://example.com</a></p>',
-            Convert::toHtml('https://example.com'),
-        );
+        $converter = (new Convert(new Options(autoLinks: false)))->withText("\n\n*a*\n")->convert();
+
+        self::assertSame('<p><em>a</em></p>', $converter->getText());
     }
 
-    public function test_bare_urls_can_be_left_alone(): void
+    public function test_a_text_that_forges_a_token_is_written_as_text(): void
     {
-        $html = Convert::toHtml('See https://example.com and *https://example.com/~a*', new Options(autoLinks: false));
-
-        self::assertSame('<p>See https://example.com and <span class="b">https://example.com/~a</span></p>', $html);
+        self::assertSame('<p>a 0 b</p>', Convert::toHtml("a \x1a0\x1b b"));
     }
 
-    public function test_converts_in_one_call_or_with_an_instance(): void
+    #[DataProvider('provideAttributes')]
+    public function test_attributes(string $markdown, string $html): void
     {
-        $options = new Options(styleClasses: ['*' => 'strong']);
-
-        self::assertSame('<p><span class="strong">a</span></p>', Convert::toHtml('*a*', $options));
-        self::assertSame('<p><span class="strong">a</span></p>', (new Convert($options))->withText('*a*')->convert()->getText());
+        self::assertSame($html, Convert::toHtml($markdown));
     }
 
-    #[DataProvider('syntaxProvider')]
-    public function test_converts_the_syntax(string $input, string $expected): void
+    public function test_bare_urls_stay_as_text_when_the_option_says_so(): void
     {
-        self::assertSame($expected, (new Convert())->withText($input)->convert()->getText());
+        self::assertSame('<p>https://x.org/_a_</p>', Convert::toHtml('https://x.org/_a_', new Options(autoLinks: false)));
     }
 
-    #[DataProvider('escapingProvider')]
-    public function test_escapes_the_output(string $input, string $expected): void
+    #[DataProvider('provideCodeBlocks')]
+    public function test_code_blocks(string $markdown, string $html): void
     {
-        self::assertSame($expected, (new Convert())->withText($input)->convert()->getText());
+        self::assertSame($html, Convert::toHtml($markdown));
     }
 
-    public function test_raw_html_can_be_kept_on_a_text_that_is_trusted(): void
+    #[DataProvider('provideHeadings')]
+    public function test_headings(string $markdown, string $html): void
     {
-        $options = new Options(unsafeAllowRawHtml: true);
-
-        self::assertSame('<p><b>x</b> <span class="b">y</span></p>', Convert::toHtml('<b>x</b> *y*', $options));
-        self::assertSame('<p><img src="https://x.fr/a.png" alt="-a-"> and <a href="https://x.fr">https://x.fr</a></p>', Convert::toHtml('<img src="https://x.fr/a.png" alt="-a-"> and https://x.fr', $options));
-        self::assertSame('<p><a href="https://x.fr/~a~">~b~</a></p>', Convert::toHtml('<a href="https://x.fr/~a~">~b~</a>', $options));
+        self::assertSame($html, Convert::toHtml($markdown));
     }
 
-    public function test_raw_html_is_escaped_by_default(): void
+    #[DataProvider('provideLinksAndImages')]
+    public function test_links_and_images(string $markdown, string $html): void
     {
-        self::assertSame('<p>&lt;b onclick="x"&gt;y&lt;/b&gt;</p>', Convert::toHtml('<b onclick="x">y</b>'));
+        self::assertSame($html, Convert::toHtml($markdown));
     }
 
-    public function test_style_classes_can_be_changed_or_left_out(): void
+    #[DataProvider('provideLists')]
+    public function test_lists(string $markdown, string $html): void
     {
-        $options = new Options(styleClasses: ['*' => 'strong', '-' => 'em']);
-
-        self::assertSame(
-            '<p><span class="strong">a</span> <span class="em">b</span> _c_ ~d~ <span class="em strong">e</span></p>',
-            Convert::toHtml('*a* -b- _c_ ~d~ -*e*-', $options),
-        );
+        self::assertSame($html, Convert::toHtml($markdown));
     }
 
-    public function test_styles_can_be_switched_off_but_the_line_break_stays(): void
+    #[DataProvider('provideParagraphsAndInline')]
+    public function test_paragraphs_and_inline(string $markdown, string $html): void
     {
-        self::assertSame("<p>*a* -b-<br>\nc</p>", Convert::toHtml("*a* -b-  \nc", new Options(styleClasses: [])));
+        self::assertSame($html, Convert::toHtml($markdown));
     }
 
-    public function test_with_text_trims_the_text(): void
+    #[DataProvider('provideQuotes')]
+    public function test_quotes(string $markdown, string $html): void
     {
-        self::assertSame('Hello', (new Convert())->withText("  Hello\n")->getText());
+        self::assertSame($html, Convert::toHtml($markdown));
+    }
+
+    public function test_raw_html_is_kept_when_the_option_says_so(): void
+    {
+        $html = Convert::toHtml("<div class=\"x\">\nraw *no*\n</div>\n\ntext <b>bold</b> <!-- c -->\n\n*em*", new Options(unsafeAllowRawHtml: true));
+
+        self::assertSame("<div class=\"x\">\nraw *no*\n</div>\n<p>text <b>bold</b> <!-- c --></p>\n<p><em>em</em></p>", $html);
+    }
+
+    #[DataProvider('provideRulesAndTables')]
+    public function test_rules_and_tables(string $markdown, string $html): void
+    {
+        self::assertSame($html, Convert::toHtml($markdown));
     }
 }

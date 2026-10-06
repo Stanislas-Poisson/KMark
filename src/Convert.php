@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace KMark;
 
+use KMark\Block\BlockParser;
+use KMark\Inline\InlineParser;
+
 /**
- * KMark is an adaptation of the Markdown syntax, dedicated to the web,
- * that allows to set an id and CSS classes on every element.
+ * KMark converts Markdown to HTML, as the original Markdown does, and lets you set an id and CSS classes on
+ * the elements with "{#id .class}".
  *
  * Copyright (c) 2013 Stanislas Poisson - MIT license
  * https://stanislas-poisson.fr
@@ -31,14 +34,11 @@ final readonly class Convert
      */
     public function convert(): self
     {
-        $blockRenderer = new BlockRenderer(new InlineRenderer($this->options));
-        $blocks        = [];
+        $references      = new References();
+        $lines           = $references->extract(Lines::split($this->text));
+        $blockParser     = new BlockParser(new InlineParser($this->options, $references), $this->options);
 
-        foreach ((new BlockSplitter())->split($this->clean($this->text)) as $block) {
-            $blocks[] = $blockRenderer->render($block);
-        }
-
-        return new self($this->options, implode("\n\n", $blocks));
+        return new self($this->options, $blockParser->parse($lines));
     }
 
     public function getText(): string
@@ -51,17 +51,7 @@ final readonly class Convert
      */
     public function withText(string $text): self
     {
-        return new self($this->options, trim($text));
-    }
-
-    /**
-     * Unifies the line breaks and keeps at most one blank line between two blocks.
-     */
-    private function clean(string $text): string
-    {
-        $text = str_replace(["\r\n", "\r"], "\n", $text);
-        $text = preg_replace('/\n *\n/', "\n\n", $text) ?? $text;
-
-        return preg_replace('/\n{3,}/', "\n\n", $text) ?? $text;
+        // Only the blank lines around the text are dropped: the first line can be indented, as code is.
+        return new self($this->options, trim($text, "\r\n"));
     }
 }

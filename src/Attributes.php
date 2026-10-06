@@ -27,13 +27,30 @@ final readonly class Attributes
      */
     public static function extract(string $text): array
     {
-        if (1 !== preg_match('/^(.*?)\s*(?<!\\\\)\{([#.\w\s-]*)\}\s*$/s', $text, $match)) {
+        if (1 !== preg_match('/^(?:(.*?)\s+)?(?<!\\\\)\{([#.\w\s-]*)\}\s*$/s', $text, $match)) {
             return [$text, new self()];
         }
 
-        $attributes = self::parse($match[2]);
+        $attributes = self::fromList($match[2]);
 
         return $attributes instanceof Attributes ? [$match[1], $attributes] : [$text, new self()];
+    }
+
+    /**
+     * @return self|null the attributes, or null if the names are not valid
+     */
+    /**
+     * The attributes of a list such as "#id .one .two", or null when it is not one.
+     */
+    public static function fromList(string $names): ?self
+    {
+        if (1 !== preg_match('/^[#.][\w-]+(?:\s+[#.][\w-]+)*$/', trim($names))) {
+            return null;
+        }
+
+        preg_match_all('/([#.])([\w-]+)/', $names, $tokens, PREG_SET_ORDER);
+
+        return new self(self::names($tokens, '#')[0] ?? '', self::names($tokens, '.'));
     }
 
     /**
@@ -64,19 +81,5 @@ final readonly class Attributes
         $tokens = array_filter($tokens, static fn (array $token): bool => $marker === $token[1]);
 
         return array_values(array_map(static fn (array $token): string => $token[2], $tokens));
-    }
-
-    /**
-     * @return self|null the attributes, or null if the names are not valid
-     */
-    private static function parse(string $names): ?self
-    {
-        if (1 !== preg_match('/^[#.][\w-]+(?:\s+[#.][\w-]+)*$/', trim($names))) {
-            return null;
-        }
-
-        preg_match_all('/([#.])([\w-]+)/', $names, $tokens, PREG_SET_ORDER);
-
-        return new self(self::names($tokens, '#')[0] ?? '', self::names($tokens, '.'));
     }
 }

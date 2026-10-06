@@ -17,12 +17,6 @@ final class OptionsTest extends TestCase
      */
     public static function invalidProvider(): iterable
     {
-        yield 'unknown marker' => [static fn (): Options => new Options(styleClasses: ['/' => 'd']), '"/" is not a style marker'];
-
-        yield 'class with a space' => [static fn (): Options => new Options(styleClasses: ['*' => 'a b']), '"a b" is not a valid CSS class'];
-
-        yield 'empty class' => [static fn (): Options => new Options(styleClasses: ['*' => '']), '"" is not a valid CSS class'];
-
         yield 'scheme in capitals' => [static fn (): Options => new Options(allowedSchemes: ['HTTP']), '"HTTP" is not a valid scheme'];
 
         yield 'scheme with a colon' => [static fn (): Options => new Options(allowedSchemes: ['http:']), '"http:" is not a valid scheme'];
@@ -34,7 +28,6 @@ final class OptionsTest extends TestCase
 
         self::assertTrue($options->autoLinks);
         self::assertFalse($options->unsafeAllowRawHtml);
-        self::assertSame(['*' => 'b', '-' => 'i', '_' => 'u', '~' => 'd'], $options->styleClasses);
         self::assertSame(['http', 'https', 'mailto', 'tel', 'ftp'], $options->allowedSchemes);
     }
 
