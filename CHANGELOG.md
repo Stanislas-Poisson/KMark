@@ -2,6 +2,12 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project follows [Semantic Versioning](https://semver.org/) from the version 1.0.0.
 
+## 1.0.1 - 2026-10-06
+
+### Added
+
+- A documentation site on GitHub Pages: the guide (the README) and the reference of every class, read from the source, for each released version ([#28](https://github.com/Stanislas-Poisson/KMark/issues/28)).
+
 ## 1.0.0 - 2026-10-04
 
 The first stable version: KMark was a proof of concept, and is now a tested library with a configuration, published as a Composer package.

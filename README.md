@@ -4,6 +4,10 @@ A custom Markdown parser written in PHP. It extends the usual syntax so that an 
 
 > **Status: stable, `1.0.0`.** KMark was written in 2013 and moved to PHP 7 in 2017. The converter was cleaned and tested ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)) and the text styles were added ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)), and it is published as a Composer package. See [Known limits](#known-limits) and [Roadmap](#roadmap).
 
+## Documentation
+
+The documentation site is <https://stanislas-poisson.github.io/KMark/>: this guide and the reference of every class, read from the source, for each released version (selector at the top right, `next` is `main`). Build it with `cd docs && npm ci && npm run dev`.
+
 ## Requirements
 
 PHP 8.3 or higher. There is no dependency.
