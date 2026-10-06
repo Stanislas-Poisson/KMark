@@ -2,7 +2,7 @@
 
 A Markdown to HTML converter written in PHP. It follows the original Markdown (with the usual GitHub extensions: tables, fenced code, strikethrough), and adds one thing to it: an id and CSS classes can be attached to an element, for example `# Title {#myId .class1 .class2}`. It is made for the web: the output is HTML.
 
-> **Status: `2.0.0` is being prepared on `develop`.** KMark was written in 2013 with a syntax of its own (bold with `*x*`, italic with `-x-`, links as `[x]:(url)`, code between two lines of `~~`). It now follows the Markdown that everybody writes, so a text written for Markdown renders as expected ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)). That is a breaking change: see [Upgrading from 1.x](#upgrading-from-1x). The latest release is `1.0.1`.
+> **Status: stable, `2.0.0`.** KMark was written in 2013 with a syntax of its own (bold with `*x*`, italic with `-x-`, links as `[x]:(url)`, code between two lines of `~~`). It now follows the Markdown that everybody writes, so a text written for Markdown renders as expected ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)). That is a breaking change: see [Upgrading from 1.x](#upgrading-from-1x).
 
 ## Documentation
 
@@ -283,7 +283,7 @@ make quality   # Pint, PHPStan, Rector, PHP Insights and PHPUnit
 1. Fix the known bugs and clean the application ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)): done.
 2. Add the missing features ([#3](https://github.com/Stanislas-Poisson/KMark/issues/3)): done.
 3. Turn KMark into a Composer package with a configuration ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)): done, released as `1.0.0`.
-4. Follow the original Markdown and keep the id and class rules ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)): done on `develop`, to be released as `2.0.0`.
+4. Follow the original Markdown and keep the id and class rules ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)): done, released as `2.0.0`.
 
 ## License
 

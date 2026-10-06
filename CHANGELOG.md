@@ -2,7 +2,7 @@
 
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/), and the project follows [Semantic Versioning](https://semver.org/) from the version 1.0.0.
 
-## Unreleased
+## 2.0.0 - 2026-10-06
 
 KMark now follows the original Markdown instead of a syntax of its own ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)). The id and class rules are kept.
 
