@@ -292,6 +292,10 @@ make quality   # Pint, PHPStan, Rector, PHP Insights and PHPUnit
 3. Turn KMark into a Composer package with a configuration ([#4](https://github.com/Stanislas-Poisson/KMark/issues/4)): done, released as `1.0.0`.
 4. Follow the original Markdown and keep the id and class rules ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)): done, released as `2.0.0`.
 
+## Statistics
+
+![Statistics of KMark][stats-card]
+
 ## License
 
 [MIT](LICENSE). Copyright (c) 2013 Stanislas Poisson.
@@ -307,3 +311,4 @@ make quality   # Pint, PHPStan, Rector, PHP Insights and PHPUnit
 [license]: LICENSE
 [docs-badge]: https://img.shields.io/badge/docs-online-blue
 [docs]: https://stanislas-poisson.github.io/KMark/
+[stats-card]: https://raw.githubusercontent.com/Stanislas-Poisson/Stanislas-Poisson/main/assets/projects/kmark.svg
