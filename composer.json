@@ -1,7 +1,7 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "stanislas-poisson/kmark",
-    "description": "A Markdown-like text to HTML converter that lets you set an id and CSS classes on every element.",
+    "description": "A Markdown to HTML converter that follows the original Markdown and lets you set an id and CSS classes on the elements.",
     "type": "library",
     "keywords": [
         "markdown",
