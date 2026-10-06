@@ -166,6 +166,8 @@ This is what KMark adds to Markdown. Write `{#id .class1 .class2}`:
 
 - after the language of a fenced code block: ` ```php {#snippet .dark}`, which gives them to the `<pre>`.
 
+The id and classes go on the headings, paragraphs, lists and their items, quotes, tables, code blocks, links, images and code spans. For the styles (bold, italic, strikethrough), use the option `tags`.
+
 Only the first id is kept, and only letters, digits, `_` and `-` are accepted in a name. If the braces hold anything else, they stay in the text.
 
 ### Safety
@@ -179,22 +181,26 @@ The settings are given with an immutable `Options` object, to `Convert::toHtml()
 ```php
 use KMark\Convert;
 use KMark\Options;
+use KMark\Tag;
 
 $options = new Options(
     autoLinks: false,
     allowedSchemes: ['https', 'mailto'],
+    tags: ['strong' => new Tag('span', ['bold'])],
 );
 
-echo Convert::toHtml('*hello* https://example.com', $options);
+echo Convert::toHtml('**hello** https://example.com', $options);
+// <p><span class="bold">hello</span> https://example.com</p>
 ```
 
 | Option | Default | Description |
 | :--- | :--- | :--- |
 | `autoLinks` | `true` | Turn the bare `http://` and `https://` URLs into links. |
 | `allowedSchemes` | `['http', 'https', 'mailto', 'tel', 'ftp']` | The schemes that a link or an image can have, in lowercase. A relative URL is always allowed. |
+| `tags` | `[]` | The element that writes a style, by style: `strong`, `em` and `del`, each a `new Tag('name', ['class', …])`. The default is `<strong>`, `<em>` and `<del>`; `new Tag('b')` gives `<b>`, `new Tag('span', ['bold'])` gives `<span class="bold">`. |
 | `unsafeAllowRawHtml` | `false` | Keep the HTML written in the text instead of escaping it: the tags in a text, and the blocks that start with a tag. **Never use it on a text you do not trust**: it allows scripts. Code stays escaped. |
 
-An invalid scheme throws an `InvalidArgumentException`.
+An invalid scheme, style, element name or class name throws an `InvalidArgumentException`.
 
 ### Malformed input
 
@@ -226,7 +232,7 @@ The syntax of `1.x` was KMark's own. `2.0` follows Markdown, so a text has to be
 | a rule of six dashes | `---` |
 | `<code>` for a block | `<pre><code>` |
 
-The option `styleClasses` and the constant `Options::DEFAULT_STYLE_CLASSES` are gone. The HTML is written one block per line, as the usual converters do.
+The option `styleClasses` and the constant `Options::DEFAULT_STYLE_CLASSES` are replaced by the option `tags`: `new Options(tags: ['strong' => new Tag('span', ['b']), 'em' => new Tag('span', ['i'])])` gives back the `<span class="…">` of `1.x`. The HTML is written one block per line, as the usual converters do.
 
 ## Development
 

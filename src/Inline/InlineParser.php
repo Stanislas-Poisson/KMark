@@ -38,7 +38,7 @@ final readonly class InlineParser
     public function __construct(private Options $options = new Options(), References $references = new References())
     {
         $safeUrls         = new SafeUrls($options->allowedSchemes);
-        $this->emphasis   = new Emphasis();
+        $this->emphasis   = new Emphasis($options);
         $this->autoLinks  = new AutoLinks($safeUrls);
         $this->bareUrls   = new BareUrls($options->autoLinks);
         $this->codeSpans  = new CodeSpans();

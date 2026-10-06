@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KMark\Inline;
 
+use KMark\Options;
+
 /**
  * Emphasis, as in the original Markdown: "*em*" and "_em_" give <em>, "**strong**" and "__strong__" give
  * <strong>. And, as in GitHub Markdown, "~~strikethrough~~" gives <del>.
@@ -12,19 +14,24 @@ namespace KMark\Inline;
  *
  * @internal
  */
-final class Emphasis
+final readonly class Emphasis
 {
-    private const array RULES = [
-        '/(?<![~\w])~~(?=\S)(.+?)(?<=\S)~~(?!~)/s'                  => '<del>$1</del>',
-        '/(?<![*\w])\*\*(?=\S)(.+?[*]*)(?<=\S)\*\*(?!\*)/s'         => '<strong>$1</strong>',
-        '/(?<![_\w])__(?=\S)(.+?[_]*)(?<=\S)__(?![_\w])/s'          => '<strong>$1</strong>',
-        '/(?<![*\w])\*(?=[^\s*])(.+?)(?<=[^\s*])\*(?!\*)/s'         => '<em>$1</em>',
-        '/(?<![_\w])_(?=[^\s_])(.+?)(?<=[^\s_])_(?![_\w])/s'        => '<em>$1</em>',
-    ];
+    public function __construct(private Options $options = new Options()) {}
 
     public function render(string $text): string
     {
-        foreach (self::RULES as $pattern => $replacement) {
+        $del    = $this->options->tag('del')->wrap();
+        $strong = $this->options->tag('strong')->wrap();
+        $em     = $this->options->tag('em')->wrap();
+        $rules  = [
+            '/(?<![~\w])~~(?=\S)(.+?)(?<=\S)~~(?!~)/s'              => $del,
+            '/(?<![*\w])\*\*(?=\S)(.+?[*]*)(?<=\S)\*\*(?!\*)/s'     => $strong,
+            '/(?<![_\w])__(?=\S)(.+?[_]*)(?<=\S)__(?![_\w])/s'      => $strong,
+            '/(?<![*\w])\*(?=[^\s*])(.+?)(?<=[^\s*])\*(?!\*)/s'     => $em,
+            '/(?<![_\w])_(?=[^\s_])(.+?)(?<=[^\s_])_(?![_\w])/s'    => $em,
+        ];
+
+        foreach ($rules as $pattern => $replacement) {
             $text = preg_replace($pattern, $replacement, $text) ?? $text;
         }
 

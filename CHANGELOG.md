@@ -15,11 +15,12 @@ KMark now follows the original Markdown instead of a syntax of its own ([#34](ht
 ### Added
 
 - Setext headings, reference links and definitions, `<url>` autolinks, hard line breaks, lazy quotes and list items, tables with escaped bars, numbered lists with their start, and `{#id .class}` on a line of its own for any block.
+- The option `tags` chooses the element of each style, with its classes: `new Tag('span', ['bold'])`.
 - The option `unsafeAllowRawHtml` also keeps HTML blocks.
 
 ### Removed
 
-- **Breaking:** the option `styleClasses` and `Options::DEFAULT_STYLE_CLASSES`: the styles are HTML elements, not classes.
+- **Breaking:** the option `styleClasses` and `Options::DEFAULT_STYLE_CLASSES`, replaced by `tags`.
 
 ## 1.0.1 - 2026-10-06
 

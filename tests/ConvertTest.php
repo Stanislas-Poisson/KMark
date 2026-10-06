@@ -6,6 +6,7 @@ namespace KMark\Tests;
 
 use KMark\Convert;
 use KMark\Options;
+use KMark\Tag;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -979,5 +980,19 @@ ___
     public function test_rules_and_tables(string $markdown, string $html): void
     {
         self::assertSame($html, Convert::toHtml($markdown));
+    }
+
+    public function test_the_element_of_a_style_can_be_chosen(): void
+    {
+        $options = new Options(tags: [
+            'strong' => new Tag('b'),
+            'em'     => new Tag('span', ['italic', 'big']),
+            'del'    => new Tag('s'),
+        ]);
+
+        self::assertSame(
+            '<p><b>a</b> <span class="italic big">b</span> <s>c</s></p>',
+            Convert::toHtml('**a** _b_ ~~c~~', $options),
+        );
     }
 }
