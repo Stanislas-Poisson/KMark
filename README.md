@@ -1,12 +1,19 @@
 # KMark
 
+[![CI][ci-badge]][ci]
+[![Release][release-badge]][releases]
+[![Packagist][packagist-badge]][packagist]
+[![PHP][php-badge]][packagist]
+[![License][license-badge]][license]
+[![Docs][docs-badge]][docs]
+
 A Markdown to HTML converter written in PHP. It follows the original Markdown (with the usual GitHub extensions: tables, fenced code, strikethrough), and adds one thing to it: an id and CSS classes can be attached to an element, for example `# Title {#myId .class1 .class2}`. It is made for the web: the output is HTML.
 
 > **Status: stable, `2.0.0`.** KMark was written in 2013 with a syntax of its own (bold with `*x*`, italic with `-x-`, links as `[x]:(url)`, code between two lines of `~~`). It now follows the Markdown that everybody writes, so a text written for Markdown renders as expected ([#34](https://github.com/Stanislas-Poisson/KMark/issues/34)). That is a breaking change: see [Upgrading from 1.x](#upgrading-from-1x).
 
 ## Documentation
 
-The documentation site is <https://stanislas-poisson.github.io/KMark/>: this guide and the reference of every class, read from the source, for each released version (selector at the top right, `next` is `main`). Build it with `cd docs && npm ci && npm run dev`.
+The [documentation site][docs] has this guide and the reference of every class, read from the source, for each released version (selector at the top right, `next` is `main`). Build it with `cd docs && npm ci && npm run dev`.
 
 ## Requirements
 
@@ -288,3 +295,15 @@ make quality   # Pint, PHPStan, Rector, PHP Insights and PHPUnit
 ## License
 
 [MIT](LICENSE). Copyright (c) 2013 Stanislas Poisson.
+
+[ci-badge]: https://img.shields.io/github/actions/workflow/status/Stanislas-Poisson/KMark/ci.yml?branch=main&label=CI
+[ci]: https://github.com/Stanislas-Poisson/KMark/actions/workflows/ci.yml
+[release-badge]: https://img.shields.io/github/v/release/Stanislas-Poisson/KMark
+[releases]: https://github.com/Stanislas-Poisson/KMark/releases
+[packagist-badge]: https://img.shields.io/packagist/v/stanislas-poisson/kmark
+[packagist]: https://packagist.org/packages/stanislas-poisson/kmark
+[php-badge]: https://img.shields.io/packagist/dependency-v/stanislas-poisson/kmark/php
+[license-badge]: https://img.shields.io/github/license/Stanislas-Poisson/KMark
+[license]: LICENSE
+[docs-badge]: https://img.shields.io/badge/docs-online-blue
+[docs]: https://stanislas-poisson.github.io/KMark/
