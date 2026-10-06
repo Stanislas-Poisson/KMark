@@ -14,14 +14,19 @@ Please **do not disclose a vulnerability publicly** until it has been reviewed a
 
 ## Supported versions
 
-KMark is a proof of concept and has no release yet. Fixes are made on `main`.
+| Version | Supported |
+| :--- | :--- |
+| `1.x` | Yes |
+
+Only the latest minor version of the latest major version receives fixes.
 
 ---
 
 ## Scope
 
 - KMark is a PHP class. It has no web server, no authentication and no user account, and it stores nothing.
-- It is a proof of concept: **the input is not escaped**, so raw HTML such as `<script>` goes through to the output. Do not use it on text you do not trust until this is fixed ([#2](https://github.com/Stanislas-Poisson/KMark/issues/2)).
+- The input is escaped and only links with a known scheme are kept (see the README), but the code has had no security audit. Report any way to get a script, an event attribute or a `javascript:` URL into the output.
+- The option `unsafeAllowRawHtml` keeps the HTML of the text on purpose: what it lets through is not a vulnerability. The default settings are in scope.
 - A bug in the conversion of a regular text is not a vulnerability: open an issue.
 
 [advisories]: https://github.com/Stanislas-Poisson/KMark/security/advisories/new
